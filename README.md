@@ -1,1 +1,7 @@
-# Dự án cá nhân làm bằng netcore 8.0, reactjs, redux-toolkit, nextjs, sqlserver
+# Dự án cá nhân 
+## Công nghệ sử dung:
+  - netcore 8.0
+  - reactjs
+  - redux-toolkit
+  - nextjs
+  - sqlserver
