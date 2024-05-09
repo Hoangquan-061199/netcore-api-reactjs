@@ -47,8 +47,9 @@ internal class DapperDA(string conection) : IDapperDA
             SetId(obj, id.First(), propertyContainer.IdPairs);
             return id.First();
         }
-        catch
+        catch(Exception e)
         {
+            Utilities.AddLogError(e);
             return 0;
         }
     }
@@ -69,8 +70,9 @@ internal class DapperDA(string conection) : IDapperDA
             SetId(obj, id.FirstOrDefault(), propertyContainer.IdPairs);
             return 1;
         }
-        catch
+        catch(Exception e)
         {
+            Utilities.AddLogError(e);
             return 0;
         }
     }
@@ -86,11 +88,10 @@ internal class DapperDA(string conection) : IDapperDA
             await ExecuteAsync(CommandType.Text, sql, propertyContainer.AllPairs);
             return 1;
         }
-        catch (Exception e)
+        catch(Exception e)
         {
-            Console.Write(e.Message);
+            Utilities.AddLogError(e);
             return 0;
-            throw;
         }
     }
 

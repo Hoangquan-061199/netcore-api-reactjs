@@ -92,12 +92,16 @@ namespace AdminBackendApi
         /// RefreshToken Tạo mã token mới khi token cũ hết hạn
         /// </summary>
         [HttpPost("RefreshToken")]
-        public ActionResult<string> RefreshToken()
+        public ActionResult RefreshToken()
         {
+            MessagesModel msg = new()
+            {
+                Message = "Invalid refresh token :)"
+            };
             try
             {
                 string refreshToken = Request.Cookies["RefreshToken"]!;
-                if (string.IsNullOrEmpty(refreshToken)) return Unauthorized("Invalid refresh token :)");
+                if (string.IsNullOrEmpty(refreshToken)) return Unauthorized(msg);
                 SecurityKey securitykey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(WebConfig.KeyRefresh!));
                 DateTime timeout = DateTime.Now.AddMinutes(Convert.ToInt32(WebConfig.TimeoutRefresh!));
                 TokenValidationParameters validationParameters = new()
@@ -116,14 +120,14 @@ namespace AdminBackendApi
                 CreateToken(checkToken.User!, "RefreshToken");
                 ResponseRefreshToken rs = new()
                 {
-                    RefreshToken = tokenNew
+                    Token = tokenNew
                 };
                 return Ok(rs);
             }
             catch (Exception e)
             {
                 Utilities.AddLogError(e);
-                return string.Empty;
+                return NotFound(msg);
             }
         }
 
