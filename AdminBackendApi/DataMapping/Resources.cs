@@ -1,10 +1,10 @@
 ﻿namespace AdminBackendApi;
 
-internal class Resources
+public class Resources
 {
-    internal int ID { get; set; }
-    internal string? Code { get; set; }
-    internal string? ValueCode { get; set; }
-    internal string? Lang { get; set; }
-    internal bool IsDeleted { get; set; }
+    public int ID { get; set; }
+    public string? Code { get; set; }
+    public string? ValueCode { get; set; }
+    public string? Lang { get; set; }
+    public bool IsDeleted { get; set; }
 }

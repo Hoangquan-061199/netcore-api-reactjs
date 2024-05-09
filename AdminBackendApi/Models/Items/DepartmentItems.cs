@@ -1,8 +1,8 @@
 ﻿namespace AdminBackendApi;
 
-internal class DepartmentItems : BaseItems
+public class DepartmentItems : BaseItems
 {
-    internal string Name { get; set; } = string.Empty;
-    internal int OrderDisplay { get; set; }
-    internal bool IsShow { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public int OrderDisplay { get; set; }
+    public bool IsShow { get; set; }
 }

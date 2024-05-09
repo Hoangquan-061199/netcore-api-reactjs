@@ -1,7 +1,7 @@
 ﻿namespace AdminBackendApi;
 
-internal class BaseItems
+public class BaseItems
 {
-    protected int TotalRecord { get; set; }
-    protected int ID { get; set; }
+    public int TotalRecord { get; set; }
+    public int ID { get; set; }
 }

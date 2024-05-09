@@ -1,12 +1,12 @@
 ﻿namespace AdminBackendApi;
 
-internal class Attributes
+public class Attributes
 {
-    internal int ID { get; set; }
-    internal string? Name { get; set; }
-    internal string? NameAscii { get; set; }
-    internal bool IsShow { get; set; }
-    internal bool IsDeleted { get; set; }
-    internal int OrderDisplay { get; set; }
-    internal string? ModuleIds { get; set; }
+    public int ID { get; set; }
+    public string? Name { get; set; }
+    public string? NameAscii { get; set; }
+    public bool IsShow { get; set; }
+    public bool IsDeleted { get; set; }
+    public int OrderDisplay { get; set; }
+    public string? ModuleIds { get; set; }
 }

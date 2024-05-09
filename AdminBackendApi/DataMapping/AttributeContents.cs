@@ -1,10 +1,10 @@
 ﻿namespace AdminBackendApi;
 
-internal class AttributeContents
+public class AttributeContents
 {
-    internal int ID { get; set; }
-    internal int AttributeId { get; set; }
-    internal int ContentId { get; set; }
-    internal int ProductId { get; set; }
-    internal decimal Price { get; set; }
+    public int ID { get; set; }
+    public int AttributeId { get; set; }
+    public int ContentId { get; set; }
+    public int ProductId { get; set; }
+    public decimal Price { get; set; }
 }

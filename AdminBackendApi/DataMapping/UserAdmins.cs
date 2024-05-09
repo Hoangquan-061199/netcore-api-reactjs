@@ -1,25 +1,25 @@
 ﻿namespace AdminBackendApi;
 
-internal class UserAdmins
+public class UserAdmins
 {
-    internal Guid UserId { get; set; }
-    internal string? UserName { get; set; }
-    internal string? FullName { get; set; }
-    internal string? Email { get; set; }
-    internal string? Roles { get; set; }
-    internal string? RoleActive { get; set; }
-    internal string? ModuleAdminIds { get; set; }
-    internal string? ModuleWebsiteIds { get; set; }
-    internal bool IsDeleted { get; set; }
-    internal bool IsShow { get; set; }
-    internal bool IsActive { get; set; }
-    internal DateTime CreatedDate { get; set; }
-    internal DateTime ModifiedDate { get; set; }
-    internal DateTime LockDate { get; set; }
-    internal int CountPassFail { get; set; }
-    internal bool IsLock { get; set; }
-    internal string? Password { get; set; }
-    internal string? PasswordSalt { get; set; }
-    internal int DepartmentId { get; set; }
-    internal string? UrlPicture { get; set; }
+    public Guid UserId { get; set; }
+    public string? UserName { get; set; }
+    public string? FullName { get; set; }
+    public string? Email { get; set; }
+    public string? Roles { get; set; }
+    public string? RoleActive { get; set; }
+    public string? ModuleAdminIds { get; set; }
+    public string? ModuleWebsiteIds { get; set; }
+    public bool IsDeleted { get; set; }
+    public bool IsShow { get; set; }
+    public bool IsActive { get; set; }
+    public DateTime CreatedDate { get; set; }
+    public DateTime ModifiedDate { get; set; }
+    public DateTime LockDate { get; set; }
+    public int CountPassFail { get; set; }
+    public bool IsLock { get; set; }
+    public string? Password { get; set; }
+    public string? PasswordSalt { get; set; }
+    public int DepartmentId { get; set; }
+    public string? UrlPicture { get; set; }
 }

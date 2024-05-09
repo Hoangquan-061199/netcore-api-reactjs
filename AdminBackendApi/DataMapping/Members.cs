@@ -1,20 +1,20 @@
 ﻿namespace AdminBackendApi;
 
-internal class Members
+public class Members
 {
-    internal Guid UserId { get; set; }
-    internal string? UserName { get; set; }
-    internal string? Password { get; set; }
-    internal string? PasswordSalt { get; set; }
-    internal int Phone { get; set; }
-    internal string? Email { get; set; }
-    internal string? Address { get; set; }
-    internal string? FullName { get; set; }
-    internal bool IsActive { get; set; }
-    internal bool IsDeleted { get; set; }
-    internal bool IsLock { get; set; }
-    internal string? Code { get; set; }
-    internal DateTime CodeExpired { get; set; }
-    internal DateTime LockTime { get; set; }
-    internal DateTime CreatedDate { get; set; }
+    public Guid UserId { get; set; }
+    public string? UserName { get; set; }
+    public string? Password { get; set; }
+    public string? PasswordSalt { get; set; }
+    public int Phone { get; set; }
+    public string? Email { get; set; }
+    public string? Address { get; set; }
+    public string? FullName { get; set; }
+    public bool IsActive { get; set; }
+    public bool IsDeleted { get; set; }
+    public bool IsLock { get; set; }
+    public string? Code { get; set; }
+    public DateTime CodeExpired { get; set; }
+    public DateTime LockTime { get; set; }
+    public DateTime CreatedDate { get; set; }
 }

@@ -1,11 +1,11 @@
 ﻿namespace AdminBackendApi;
 
-internal class TagModuleAdmins
+public class TagModuleAdmins
 {
-    internal int ID { get; set; }
-    internal string? ModuleAdminId { get; set; }
-    internal string? Name { get; set; }
-    internal int OrderDisplay { get; set; }
-    internal bool IsShow { get; set; }
-    internal bool IsDeleted { get; set; }
+    public int ID { get; set; }
+    public string? ModuleAdminId { get; set; }
+    public string? Name { get; set; }
+    public int OrderDisplay { get; set; }
+    public bool IsShow { get; set; }
+    public bool IsDeleted { get; set; }
 }

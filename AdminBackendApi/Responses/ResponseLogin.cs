@@ -1,7 +1,7 @@
 ﻿namespace AdminBackendApi;
 
-internal class ResponseLogin
+public class ResponseLogin
 {
-    internal string? Token { get; set; }
-    internal string? Message { get; set; }
+    public string? Token { get; set; }
+    public string? Message { get; set; }
 }

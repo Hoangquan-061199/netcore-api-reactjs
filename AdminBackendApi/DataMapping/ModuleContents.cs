@@ -1,27 +1,27 @@
 ﻿namespace AdminBackendApi;
 
-internal class ModuleContents
+public class ModuleContents
 {
-    internal int ID { get; set; }
-    internal string? Name { get; set; }
-    internal string? NameAscii { get; set; }
-    internal string? LinkUrl { get; set; }
-    internal int ParentId { get; set; }
-    internal string? Title { get; set; }
-    internal bool IsShow { get; set; }
-    internal bool IsDeleted { get; set; }
-    internal int OrderDisplay { get; set; }
-    internal string? Lang { get; set; }
-    internal string? ModuleTypeCode { get; set; }
-    internal string? Description { get; set; }
-    internal string? Content { get; set; }
-    internal string? SEOTitle { get; set; }
-    internal string? SEOKeyword { get; set; }
-    internal string? SEODescription { get; set; }
-    internal string? Canonical { get; set; }
-    internal string? IndexGoogle { get; set; }
-    internal bool Sitemap { get; set; }
-    internal string? AttributeIds { get; set; }
-    internal string? UrlPicture { get; set; }
-    internal string? AlbumPictures { get; set; }
+    public int ID { get; set; }
+    public string? Name { get; set; }
+    public string? NameAscii { get; set; }
+    public string? LinkUrl { get; set; }
+    public int ParentId { get; set; }
+    public string? Title { get; set; }
+    public bool IsShow { get; set; }
+    public bool IsDeleted { get; set; }
+    public int OrderDisplay { get; set; }
+    public string? Lang { get; set; }
+    public string? ModuleTypeCode { get; set; }
+    public string? Description { get; set; }
+    public string? Content { get; set; }
+    public string? SEOTitle { get; set; }
+    public string? SEOKeyword { get; set; }
+    public string? SEODescription { get; set; }
+    public string? Canonical { get; set; }
+    public string? IndexGoogle { get; set; }
+    public bool Sitemap { get; set; }
+    public string? AttributeIds { get; set; }
+    public string? UrlPicture { get; set; }
+    public string? AlbumPictures { get; set; }
 }

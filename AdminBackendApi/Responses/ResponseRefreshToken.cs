@@ -1,7 +1,7 @@
 ﻿namespace AdminBackendApi;
 
-internal class ResponseRefreshToken
+public class ResponseRefreshToken
 {
-    internal string? RefreshToken { get; set; }
+    public string? RefreshToken { get; set; }
 
 }

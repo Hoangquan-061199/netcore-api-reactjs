@@ -1,10 +1,10 @@
 ﻿namespace AdminBackendApi;
 
-internal class Departments
+public class Departments
 {
-    internal int ID { get; set; }
-    internal string? Name { get; set; }
-    internal int OrderDisplay { get; set; }
-    internal bool IsDeleted { get; set; }
-    internal bool IsShow { get; set; }
+    public int ID { get; set; }
+    public string? Name { get; set; }
+    public int OrderDisplay { get; set; }
+    public bool IsDeleted { get; set; }
+    public bool IsShow { get; set; }
 }

@@ -1,13 +1,13 @@
 ﻿namespace AdminBackendApi;
 
-internal class LogAdmins
+public class LogAdmins
 {
-    internal int ID { get; set; }
-    internal string? Action { get; set; }
-    internal string? Url { get; set; }
-    internal Guid UserIDValue { get; set; }
-    internal DateTime DateCreated { get; set; }
-    internal string? Content { get; set; }
-    internal string? UserLogin { get; set; }
-    internal string? ClassControl { get; set; }
+    public int ID { get; set; }
+    public string? Action { get; set; }
+    public string? Url { get; set; }
+    public Guid UserIDValue { get; set; }
+    public DateTime DateCreated { get; set; }
+    public string? Content { get; set; }
+    public string? UserLogin { get; set; }
+    public string? ClassControl { get; set; }
 }

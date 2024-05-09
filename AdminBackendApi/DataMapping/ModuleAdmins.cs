@@ -1,14 +1,14 @@
 ﻿namespace AdminBackendApi;
 
-internal class ModuleAdmins
+public class ModuleAdmins
 {
-    internal int ID { get; set; }
-    internal string? Name { get; set; }
-    internal string? LinkUrl { get; set; }
-    internal int TagId { get; set; }
-    internal int ParentId { get; set; }
-    internal bool IsShow { get; set; }
-    internal bool IsDeleted { get; set; }
-    internal string? NameAscii { get; set; }
-    internal int OrderDisplay { get; set; }
+    public int ID { get; set; }
+    public string? Name { get; set; }
+    public string? LinkUrl { get; set; }
+    public int TagId { get; set; }
+    public int ParentId { get; set; }
+    public bool IsShow { get; set; }
+    public bool IsDeleted { get; set; }
+    public string? NameAscii { get; set; }
+    public int OrderDisplay { get; set; }
 }

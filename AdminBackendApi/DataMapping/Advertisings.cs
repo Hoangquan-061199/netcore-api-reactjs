@@ -1,19 +1,19 @@
 ﻿namespace AdminBackendApi;
 
-internal class Advertisings
+public class Advertisings
 {
-    internal int ID { get; set; }
-    internal string? Name { get; set; }
-    internal string? Title { get; set; }
-    internal string? LinkUrl { get; set; }
-    internal string? Content { get; set; }
-    internal string? ModulePositionIds { get; set; }
-    internal string? ModuleIds { get; set; }
-    internal string? UrlPicture { get; set; }
-    internal string? UrlPictureMobile { get; set; }
-    internal string? Video { get; set; }
-    internal int OrderDisplay { get; set; }
-    internal bool IsDeleted { get; set; }
-    internal bool IsShow { get; set; }
-    internal string? Lang { get; set; }
+    public int ID { get; set; }
+    public string? Name { get; set; }
+    public string? Title { get; set; }
+    public string? LinkUrl { get; set; }
+    public string? Content { get; set; }
+    public string? ModulePositionIds { get; set; }
+    public string? ModuleIds { get; set; }
+    public string? UrlPicture { get; set; }
+    public string? UrlPictureMobile { get; set; }
+    public string? Video { get; set; }
+    public int OrderDisplay { get; set; }
+    public bool IsDeleted { get; set; }
+    public bool IsShow { get; set; }
+    public string? Lang { get; set; }
 }

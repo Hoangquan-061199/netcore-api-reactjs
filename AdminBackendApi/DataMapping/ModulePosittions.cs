@@ -1,22 +1,22 @@
 ﻿namespace AdminBackendApi;
 
-internal class ModulePosittions
+public class ModulePosittions
 {
-    internal int ID { get; set; }
-    internal string? Name { get; set; }
-    internal string? Code { get; set; }
-    internal string? TypeCode { get; set; }
-    internal string? ModuleIds { get; set; }
-    internal int ParentId { get; set; }
-    internal string? AdvertisingIds { get; set; }
-    internal bool IsShow { get; set; }
-    internal bool IsDeleted { get; set; }
-    internal string? Lang { get; set; }
-    internal int OrderDisplay { get; set; }
-    internal int ModuleCount { get; set; }
-    internal int ContentCount { get; set; }
-    internal int TypeView { get; set; }
-    internal int Sort { get; set; }
-    internal string? LinkUrl { get; set; }
-    internal string? UrlPicture { get; set; }
+    public int ID { get; set; }
+    public string? Name { get; set; }
+    public string? Code { get; set; }
+    public string? TypeCode { get; set; }
+    public string? ModuleIds { get; set; }
+    public int ParentId { get; set; }
+    public string? AdvertisingIds { get; set; }
+    public bool IsShow { get; set; }
+    public bool IsDeleted { get; set; }
+    public string? Lang { get; set; }
+    public int OrderDisplay { get; set; }
+    public int ModuleCount { get; set; }
+    public int ContentCount { get; set; }
+    public int TypeView { get; set; }
+    public int Sort { get; set; }
+    public string? LinkUrl { get; set; }
+    public string? UrlPicture { get; set; }
 }

@@ -1,31 +1,31 @@
 ﻿namespace AdminBackendApi;
 
-internal class Contents
+public class Contents
 {
-    internal int ID { get; set; }
-    internal string? Name { get; set; }
-    internal string? NameAscii { get; set; }
-    internal string? LinkUrl { get; set; }
-    internal string? ModuleNameAscii { get; set; }
-    internal string? ModuleIds { get; set; }
-    internal string? Title { get; set; }
-    internal string? Description { get; set; }
-    internal string? Content { get; set; }
-    internal string? SEOTitle { get; set; }
-    internal string? SEOKeyword { get; set; }
-    internal string? SEODescription { get; set; }
-    internal string? Canonical { get; set; }
-    internal string? IndexGoogle { get; set; }
-    internal bool Sitemap { get; set; }
-    internal string? UrlPicture { get; set; }
-    internal string? AlbumPictures { get; set; }
-    internal string? Lang { get; set; }
-    internal bool IsShow { get; set; }
-    internal bool IsDeleted { get; set; }
-    internal int OrderDisplay { get; set; }
-    internal DateTime CreatedDate { get; set; }
-    internal DateTime ModifiedDate { get; set; }
-    internal DateTime PublishDate { get; set; }
-    internal bool IsActive { get; set; }
-    internal string? Popular { get; set; }
+    public int ID { get; set; }
+    public string? Name { get; set; }
+    public string? NameAscii { get; set; }
+    public string? LinkUrl { get; set; }
+    public string? ModuleNameAscii { get; set; }
+    public string? ModuleIds { get; set; }
+    public string? Title { get; set; }
+    public string? Description { get; set; }
+    public string? Content { get; set; }
+    public string? SEOTitle { get; set; }
+    public string? SEOKeyword { get; set; }
+    public string? SEODescription { get; set; }
+    public string? Canonical { get; set; }
+    public string? IndexGoogle { get; set; }
+    public bool Sitemap { get; set; }
+    public string? UrlPicture { get; set; }
+    public string? AlbumPictures { get; set; }
+    public string? Lang { get; set; }
+    public bool IsShow { get; set; }
+    public bool IsDeleted { get; set; }
+    public int OrderDisplay { get; set; }
+    public DateTime CreatedDate { get; set; }
+    public DateTime ModifiedDate { get; set; }
+    public DateTime PublishDate { get; set; }
+    public bool IsActive { get; set; }
+    public string? Popular { get; set; }
 }
