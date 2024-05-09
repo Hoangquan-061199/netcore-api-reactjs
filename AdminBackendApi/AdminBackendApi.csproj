@@ -16,6 +16,9 @@
 
   <ItemGroup>
     <Folder Include="Controllers\" />
+    <Folder Include="Dapper/" />
+    <Folder Include="DataMapping/" />
+    <Folder Include="wwwroot/" />
   </ItemGroup>
 
 </Project>
