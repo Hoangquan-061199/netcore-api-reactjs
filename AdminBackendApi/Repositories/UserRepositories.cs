@@ -140,7 +140,26 @@ internal class UserRepositories(string connectionSql)
         try
         {
             SqlConnection connect = _dapperDa.GetOpenConnection();
-            IEnumerable<UserAdmins>? rs = await connect.QueryAsync<UserAdmins>("SELECT [FullName],[UrlPicture] FROM [UserAdmins] Where UserId = @userid", new { userid });
+            IEnumerable<UserAdmins>? rs = await connect.QueryAsync<UserAdmins>("SELECT [FullName],[UrlPicture],[Roles] FROM [UserAdmins] Where UserId = @userid", new { userid });
+            connect.Close();
+            return rs != null && rs.Any() ? rs.FirstOrDefault() : null;
+        }
+        catch (Exception e)
+        {
+            Utilities.AddLogError(e);
+            return null;
+        }
+    }
+
+     /// <summary>
+    /// Lấy ra Lấy ra user Theo userid
+    /// </summary>
+    internal async Task<UserAdmins?> GetUserUpdateByUserId(string userid)
+    {
+        try
+        {
+            SqlConnection connect = _dapperDa.GetOpenConnection();
+            IEnumerable<UserAdmins>? rs = await connect.QueryAsync<UserAdmins>("SELECT [FullName],[UrlPicture],[Roles],[UserName],[Email],[CreatedDate] FROM [UserAdmins] Where UserId = @userid", new { userid });
             connect.Close();
             return rs != null && rs.Any() ? rs.FirstOrDefault() : null;
         }

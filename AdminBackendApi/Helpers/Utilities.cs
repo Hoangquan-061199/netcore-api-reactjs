@@ -70,6 +70,11 @@ internal partial class Utilities
         try
         {
             string name = $"{WebConfig.PathServer}{path}/{fileName}";
+            string folder = $"{WebConfig.PathServer}{path}";
+            if (!Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
             FileInfo info = new(name);
             if (info.Exists)
             {

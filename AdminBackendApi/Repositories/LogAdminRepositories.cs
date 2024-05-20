@@ -39,7 +39,7 @@ internal class LogAdminRepositories(string connectionSql)
         try
         {
             SqlConnection connect = _dapperDa.GetOpenConnection();
-            IEnumerable<LogAdmins>? rs = await connect.QueryAsync<LogAdmins>("SELECT ID,Action,Url,UserID,DateCreated,Content,UserLogin,ClassControl FROM LogAdmins");
+            IEnumerable<LogAdmins>? rs = await connect.QueryAsync<LogAdmins>("SELECT [ID],[Action],[Link],[CreatedDate],[Content],[UserName] FROM [LogAdmins]");
             connect.Close();
             return rs != null && rs.Any() ? rs.ToList() : null;
         }

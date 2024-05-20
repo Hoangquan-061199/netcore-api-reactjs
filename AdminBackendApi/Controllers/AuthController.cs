@@ -30,7 +30,10 @@ namespace AdminBackendApi
                 }
 
                 UserAdmins? user = await _userRepositories.GetLogin(req.Username);
-                if (user == null) return BadRequest(res);
+                if (user == null) {
+                    res.Message = "Tài khoản mật khẩu không chính xác:)";
+                    return BadRequest(res);
+                }
                 if (!user.IsActive)
                 {
                     res.Message = "Tài khoản chưa được kích hoạt :)";
@@ -44,6 +47,7 @@ namespace AdminBackendApi
                 string passwordSha256 = Utilities.GeneratePasswordHash(req.Password, user.PasswordSalt!);
                 if (passwordSha256 != user.Password)
                 {
+                    res.Message = "Tài khoản mật khẩu không chính xác:)";
                     if (user.CountPassFail <= 6)
                     {
                         int count = user.CountPassFail + 1;

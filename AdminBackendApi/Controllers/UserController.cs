@@ -38,11 +38,46 @@ public class UserController : BaseController
             if (string.IsNullOrEmpty(userId)) return BadRequest(msg);
             UserAdmins? user = await _userRepositories.GetUserHeaderByUserId(userId);
             if (user == null) return BadRequest(msg);
-            object obj = new();
-            obj = new
+            ResponseUserHeader obj = new()
             {
-                user.FullName,
-                user.UrlPicture
+                FullName =user.FullName,
+                UrlPicture= user.UrlPicture,
+                Roles =user.Roles,
+                UserId = userId
+            };
+            return Ok(obj);
+        }
+        catch (Exception e)
+        {
+            Utilities.AddLogError(e);
+            return BadRequest(msg);
+        }
+    }
+
+     /// <summary>
+    /// Lấy ra user theo token
+    /// </summary>
+    [HttpGet("GetUserUpdate")]
+    public async Task<IActionResult> GetUserUpdate()
+    {
+        string msg = "Tải thất bại :)";
+        try
+        {
+            var token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
+            string? userId = GetUserAdminByToken(token);
+            if (string.IsNullOrEmpty(userId)) return BadRequest(msg);
+            UserAdmins? user = await _userRepositories.GetUserUpdateByUserId(userId);
+            if (user == null) return BadRequest(msg);
+            ResponseUpdateAccAdmin obj = new()
+            {
+                FullName =user.FullName,
+                UrlPicture= user.UrlPicture,
+                Roles =user.Roles,
+                UserId = userId,
+                DepartmentName = null,
+                Email = user.Email,
+                CreatedDate = user.CreatedDate.ToString("dd/MM/yyyy HH:mm:ss"),
+                UserName = user.UserName
             };
             return Ok(obj);
         }
