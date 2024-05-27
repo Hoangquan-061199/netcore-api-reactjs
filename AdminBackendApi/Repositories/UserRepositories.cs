@@ -18,6 +18,13 @@ internal class UserRepositories(string connectionSql)
     /// </summary>
     internal async Task<int> Update(UserAdmins obj) => await _dapperDa.Update(obj);
 
+    internal async Task<int> Delete(dynamic id, string tableName) => await _dapperDa.Delete(id, tableName);
+
+     /// <summary>
+    /// Update vào database
+    /// </summary>
+    internal async Task<int> UpdateForValue(dynamic obj, string tableName) => await _dapperDa.UpdateForValue(obj, tableName);
+
     /// <summary>
     /// Kiểm tra username có tồn tại trong db không
     /// </summary>

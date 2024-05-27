@@ -5,9 +5,8 @@ import _Layout from '../pages/_Layout';
 import Dashboard from '../pages/dashboard/Dashboard';
 import LogsAdmin from '../pages/logsadmin/LogsAdmin';
 import UserAdmin from '../pages/user/UserAdmin';
-import Account from '../pages/auth/Account';
+import Account from '../pages/user/Account';
 import LoginPage from '../pages/auth/Login';
-
 const Routers = () => {
     return (
         <>

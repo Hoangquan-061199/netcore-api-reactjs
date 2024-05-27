@@ -1,7 +1,7 @@
 import { Tabs, TabsProps } from 'antd';
-import FormAccount from '../../components/auth/FormAccount';
-import FormChangePassword from '../../components/auth/FormChangePassword';
-import DeleteAccount from '../../components/auth/DeleteAccount';
+import FormAccount from '../../components/users/FormAccount';
+import FormChangePassword from '../../components/users/FormChangePassword';
+import DeleteAccount from '../../components/users/DeleteAccount';
 
 const Account = () => {
     document.title = 'Tài khoản';

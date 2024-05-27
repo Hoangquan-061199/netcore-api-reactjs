@@ -3,8 +3,7 @@ import { selectCurrentToken } from '../redux/auth/Auth.slice';
 import { useSelector } from 'react-redux';
 
 const _LayoutLogin = () => {
-    const token =  useSelector(selectCurrentToken);;
-
+    const token = useSelector(selectCurrentToken);
     return !token ? (
         <>
             <Outlet />

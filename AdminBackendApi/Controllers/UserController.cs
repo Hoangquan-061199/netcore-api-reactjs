@@ -30,19 +30,21 @@ public class UserController : BaseController
     [HttpGet("GetUserHeader")]
     public async Task<IActionResult> GetUser()
     {
-        string msg = "Tải thất bại :)";
+        MessagesModel msg = new() {
+            Message = "Tải thất bại :)"
+        };
         try
         {
             var token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
             string? userId = GetUserAdminByToken(token);
-            if (string.IsNullOrEmpty(userId)) return BadRequest(msg);
+            if (string.IsNullOrEmpty(userId)) return Ok(msg);
             UserAdmins? user = await _userRepositories.GetUserHeaderByUserId(userId);
-            if (user == null) return BadRequest(msg);
+            if (user == null) return Ok(msg);
             ResponseUserHeader obj = new()
             {
-                FullName =user.FullName,
-                UrlPicture= user.UrlPicture,
-                Roles =user.Roles,
+                FullName = user.FullName,
+                UrlPicture = user.UrlPicture,
+                Roles = user.Roles,
                 UserId = userId
             };
             return Ok(obj);
@@ -50,29 +52,31 @@ public class UserController : BaseController
         catch (Exception e)
         {
             Utilities.AddLogError(e);
-            return BadRequest(msg);
+            return NotFound(msg);
         }
     }
 
-     /// <summary>
+    /// <summary>
     /// Lấy ra user theo token
     /// </summary>
     [HttpGet("GetUserUpdate")]
     public async Task<IActionResult> GetUserUpdate()
     {
-        string msg = "Tải thất bại :)";
+         MessagesModel msg = new() {
+            Message = "Tải thất bại :)"
+        };
         try
         {
             var token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
             string? userId = GetUserAdminByToken(token);
-            if (string.IsNullOrEmpty(userId)) return BadRequest(msg);
+            if (string.IsNullOrEmpty(userId)) return Ok(msg);
             UserAdmins? user = await _userRepositories.GetUserUpdateByUserId(userId);
-            if (user == null) return BadRequest(msg);
+            if (user == null) return Ok(msg);
             ResponseUpdateAccAdmin obj = new()
             {
-                FullName =user.FullName,
-                UrlPicture= user.UrlPicture,
-                Roles =user.Roles,
+                FullName = user.FullName,
+                UrlPicture = user.UrlPicture,
+                Roles = user.Roles,
                 UserId = userId,
                 DepartmentName = null,
                 Email = user.Email,
@@ -84,7 +88,7 @@ public class UserController : BaseController
         catch (Exception e)
         {
             Utilities.AddLogError(e);
-            return BadRequest(msg);
+            return Ok(msg);
         }
     }
 
@@ -165,7 +169,7 @@ public class UserController : BaseController
             obj.Email = Utilities.RemoveHTMLTag(obj.Email!);
             obj.UrlPicture = Utilities.RemoveHTMLTag(obj.UrlPicture!);
             UserAdmins? user = await _userRepositories.GetByUserId(obj.UserId!);
-            if (user == null) return BadRequest(msg);
+            if (user == null) return Ok(msg);
             user.FullName = obj.FullName;
             user.Email = obj.Email;
             user.UrlPicture = obj.UrlPicture;
@@ -173,9 +177,74 @@ public class UserController : BaseController
             user.Roles = obj.Roles;
             user.ModifiedDate = DateTime.Now;
             int rs = await _userRepositories.Update(user);
-            if (rs == 0) return BadRequest(msg);
+            if (rs == 0) return Ok(msg);
+            msg.Error = false;
             msg.Message = "Cập nhật tài khoản thành công :3";
             AddLogAdmin("/api/admin/User", "Cập nhật tài khoản " + user.UserName, "Update-User");
+            return Ok(msg);
+        }
+        catch (Exception e)
+        {
+            Utilities.AddLogError(e);
+            return NotFound(msg);
+        }
+    }
+
+    /// <summary>
+    /// Cập nhật tài khoản đăng nhập
+    /// </summary>
+    [HttpPatch("UpdateAccountLogin")]
+    public async Task<IActionResult> UpdateAccountLogin([FromForm] RequestUpdateAccountLogin obj)
+    {
+        MessagesModel msg = new()
+        {
+            Message = "Cập nhật tài khoản thất bại :)"
+        };
+        try
+        {
+            if (string.IsNullOrEmpty(obj.FullName) || string.IsNullOrEmpty(obj.Email))
+            {
+                msg.Message = "Vui lòng nhập các trường bắt buộc :)";
+                return Ok(msg);
+            }
+            var token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
+            string? userId = GetUserAdminByToken(token);
+            if (string.IsNullOrEmpty(userId)) return Ok(msg);
+
+            UserAdmins? user = await _userRepositories.GetByUserId(userId);
+            if (user == null) return Ok(msg);
+            obj.FullName = Utilities.RemoveHTMLTag(obj.FullName!);
+            obj.Email = Utilities.RemoveHTMLTag(obj.Email!);
+            string? url = string.Empty;
+            if (obj.File != null)
+            {
+                UploadFileModel file = HandleFiles.UploadFile(obj.File!, "image");
+                if (file != null)
+                {
+                    url = file.UrlPicture;
+                }
+            }else {
+                 url = user.UrlPicture;
+            }
+            ResponseAccountUpdateLogin userRes = new()
+            {
+                FullName = obj.FullName,
+                Email = obj.Email,
+                UrlPicture = url,
+                UserId = userId
+            };
+            int rs = await _userRepositories.UpdateForValue(userRes, "UserAdmins");
+            if (rs == 0) return Ok(msg);
+            msg.Error = false;
+            msg.Message = "Cập nhật tài khoản thành công :3";
+            msg.Obj = new
+            {
+                userId,
+                obj.FullName,
+                obj.Email,
+                UrlPicture = url
+            };
+            AddLogAdmin("/account", "Cập nhật tài khoản " + userId, "Update-User");
             return Ok(msg);
         }
         catch (Exception e)
@@ -199,12 +268,13 @@ public class UserController : BaseController
         try
         {
             UserAdmins? user = await _userRepositories.GetByUserId(UserId);
-            if (user == null) return BadRequest(msg);
+            if (user == null) return Ok(msg);
             user.IsDeleted = true;
             user.ModifiedDate = DateTime.Now;
 
             int rs = await _userRepositories.Update(user);
-            if (rs == 0) return BadRequest(msg);
+            if (rs == 0) return Ok(msg);
+            msg.Error = false;
             msg.Message = "Xoá tài khoản thành công :3";
             return Ok(msg);
         }

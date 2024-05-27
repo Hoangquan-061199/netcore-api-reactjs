@@ -22,9 +22,40 @@ internal class DapperDA(string conection) : IDapperDA
         return connection;
     }
 
-    public int Delete<T>(T obj)
+    public async Task<int> UpdateForValue(dynamic obj, string tableName)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var propertyContainer = ParsePropertiesDynamic(obj);
+            var sqlIdPairs = GetSqlPairs(propertyContainer.IdNames);
+            var sqlValuePairs = GetSqlPairs(propertyContainer.ValueNames);
+            var sql = string.Format("UPDATE [{0}] SET {1} WHERE {2}", tableName, sqlValuePairs, sqlIdPairs);
+            await ExecuteAsync(CommandType.Text, sql, propertyContainer.AllPairs);
+            return 1;
+        }
+        catch (Exception e)
+        {
+            Utilities.AddLogError(e);
+            return 0;
+        }
+    }
+
+
+    public async Task<int> Delete(dynamic obj, string tableName)
+    {
+        try
+        {
+            var propertyContainer = ParsePropertiesDynamic(obj);
+            var sqlIdPairs = GetSqlPairs(propertyContainer.IdNames);
+            var sql = string.Format("Delete from [{0}] WHERE {1}", tableName,  sqlIdPairs);
+            await ExecuteAsync(CommandType.Text, sql, propertyContainer.AllPairs);
+            return 1;
+        }
+        catch (Exception e)
+        {
+            Utilities.AddLogError(e);
+            return 0;
+        }
     }
 
     public int DeleteNoId<T>(T obj)
@@ -47,7 +78,7 @@ internal class DapperDA(string conection) : IDapperDA
             SetId(obj, id.First(), propertyContainer.IdPairs);
             return id.First();
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             Utilities.AddLogError(e);
             return 0;
@@ -70,7 +101,7 @@ internal class DapperDA(string conection) : IDapperDA
             SetId(obj, id.FirstOrDefault(), propertyContainer.IdPairs);
             return 1;
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             Utilities.AddLogError(e);
             return 0;
@@ -88,7 +119,7 @@ internal class DapperDA(string conection) : IDapperDA
             await ExecuteAsync(CommandType.Text, sql, propertyContainer.AllPairs);
             return 1;
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             Utilities.AddLogError(e);
             return 0;
@@ -123,6 +154,51 @@ internal class DapperDA(string conection) : IDapperDA
 
             // Skip methods without a public setter
             if (property.GetSetMethod() == null)
+                continue;
+
+            Type? type = property.PropertyType;
+            type = Nullable.GetUnderlyingType(type) ?? type;
+            if (type != typeof(string) && type != typeof(int) && type != typeof(bool) && type != typeof(DateTime)
+                && type != typeof(double) && type != typeof(decimal) && type != typeof(Nullable) && type != typeof(Guid))
+                continue;
+
+            string name = property.Name;
+            object? value = property.GetValue(obj, null);
+
+            if (validKeyNames.Contains(name.ToLower()))
+            {
+                propertyContainer.AddId(name, value!);
+            }
+            else if (type == typeof(DateTime))
+            {
+                if (Convert.ToDateTime(value) == DateTime.MinValue)
+                {
+                    propertyContainer.AddValue(name, null!);
+                }
+                else
+                {
+                    propertyContainer.AddValue(name, value!);
+                }
+            }
+            else
+            {
+                propertyContainer.AddValue(name, value!);
+            }
+        }
+        return propertyContainer;
+    }
+
+    private static PropertyContainer ParsePropertiesDynamic(dynamic obj)
+    {
+        PropertyContainer propertyContainer = new();
+
+        string[]? validKeyNames = ["id", "userid"];
+
+        System.Reflection.PropertyInfo[]? properties = obj!.GetType().GetProperties();
+        foreach (System.Reflection.PropertyInfo? property in properties)
+        {
+            // Skip reference types (but still include string!)
+            if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
                 continue;
 
             Type? type = property.PropertyType;
@@ -303,6 +379,12 @@ internal class DapperDA(string conection) : IDapperDA
         var pairs = keys.Select(key => string.Format("{0}=@{0}", key)).ToList();
         return string.Join(separator, pairs);
     }
+    private static string GetNameSelect(IEnumerable<string> keys, string separator = ", ")
+    {
+        var pairs = keys.Select(key => string.Format("{0}", key)).ToList();
+        return string.Join(separator, pairs);
+    }
+
 
     private async Task<int> ExecuteAsync(CommandType commandType, string sql, object? parameters = null)
     {

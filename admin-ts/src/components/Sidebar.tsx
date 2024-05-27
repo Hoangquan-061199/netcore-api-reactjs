@@ -1,6 +1,6 @@
 import { Menu } from 'antd';
 import Sider from 'antd/es/layout/Sider';
-import { OrderedListOutlined, BarChartOutlined, DashboardOutlined, ClusterOutlined } from '@ant-design/icons';
+import { OrderedListOutlined, BarChartOutlined, DashboardOutlined, ClusterOutlined, UserOutlined } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 
 type props = {
@@ -66,6 +66,16 @@ const Sidebar = ({ collapsed }: props) => {
             icon: <BarChartOutlined />,
             label: <Link to="/log-admin">Log Admin</Link>,
         },
+        {
+            key: 'acc',
+            type: 'group',
+            label: 'Account',
+        },
+        {
+            key: '/user-admin',
+            icon:  <UserOutlined />,
+            label: <Link to="/user-admin">Tài khoản</Link>,
+        },
     ];
     return (
         <div>
@@ -76,13 +86,14 @@ const Sidebar = ({ collapsed }: props) => {
                 trigger={null}
                 collapsible
                 collapsed={collapsed}
-                onBreakpoint={(broken) => {
-                    console.log(broken);
-                }}
+                // onBreakpoint={(broken) => {
+                //     // console.log(broken);
+                // }}
                 theme="light"
-                onCollapse={(collapsed, type) => {
-                    console.log(collapsed, type);
-                }}>
+                // onCollapse={(collapsed, type) => {
+                //     console.log(collapsed, type);
+                // }}
+                >
                 <div
                     className="demo-logo-vertical"
                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 15, height: 64 }}>

@@ -1,9 +1,11 @@
-const UserAdmin = () => {
-  return (
-    <>
-      user
-    </>
-  )
-}
+import ListUserAdmins from '../../components/users/ListUserAdmins';
 
-export default UserAdmin
+const UserAdmin = () => {
+    return (
+        <>
+            <ListUserAdmins />
+        </>
+    );
+};
+
+export default UserAdmin;

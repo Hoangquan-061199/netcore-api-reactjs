@@ -1,9 +1,10 @@
-import { Avatar, Button, Dropdown, MenuProps, message } from 'antd';
+import { Avatar, Button, Dropdown, MenuProps, message, Skeleton } from 'antd';
 import { Header } from 'antd/es/layout/layout';
 import { MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined, LogoutOutlined } from '@ant-design/icons';
 
 import flagVi from '../assets/images/flag-vi.webp';
 import flagEn from '../assets/images/flag-en.png';
+import avatarImg from '../assets/images/avatar.png';
 import { useLogoutMutation } from '../redux/auth/Auth.service';
 import { useDispatch } from 'react-redux';
 import { logout } from '../redux/auth/Auth.slice';
@@ -11,6 +12,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useGetUserHeaderQuery } from '../redux/users/user.service';
 import { userHeader } from '../redux/users/user.slice';
+import { getImageDomain } from '../helpers/utilities';
 
 type props = {
     collapsed: boolean;
@@ -18,18 +20,19 @@ type props = {
     colorBgContainer: string;
 };
 
-
 const HeaderComponent = ({ collapsed, setCollapsed, colorBgContainer }: props) => {
     const [logoutApi] = useLogoutMutation();
-    const {data} = useGetUserHeaderQuery();
+    const { data, isLoading } = useGetUserHeaderQuery();
     const dispath = useDispatch();
     const navigate = useNavigate();
 
     useEffect(() => {
         if (data) {
-            dispath(userHeader(data))
+            dispath(userHeader(data));
         }
     }, [data]);
+
+    console.log(isLoading)
     const handleLogout = async () => {
         try {
             let rs: any = await logoutApi();
@@ -51,7 +54,7 @@ const HeaderComponent = ({ collapsed, setCollapsed, colorBgContainer }: props) =
             key: '1',
             icon: <UserOutlined />,
             label: (
-                <Link title='Tài khoản' to="/account-admin">
+                <Link title="Tài khoản" to="/account-admin">
                     Tài khoản
                 </Link>
             ),
@@ -106,22 +109,29 @@ const HeaderComponent = ({ collapsed, setCollapsed, colorBgContainer }: props) =
 
                 <Dropdown menu={{ items: items }} placement="bottomRight">
                     <div style={{ display: 'flex', height: 64, gap: 15, alignItems: 'center', cursor: 'pointer' }}>
-                        <Avatar
-                            size="large"
-                            style={{ backgroundColor: '#d6e4ff', padding: 5 }}
-                            icon={<UserOutlined />}
-                            src={
-                                <img
-                                    src={data?.urlPicture}
-                                    alt={data?.fullName}
-                                />
-                            }
-                        />
+                        {isLoading ? (
+                            <Skeleton.Avatar active={true} size="large" shape="circle" />
+                        ) : (
+                            <Avatar
+                                size="large"
+                                style={{ backgroundColor: '#d6e4ff' }}
+                                icon={<UserOutlined />}
+                                src={<img src={getImageDomain(data?.urlPicture, avatarImg)} alt={data?.fullName} />}
+                            />
+                        )}
                         <span style={{ lineHeight: 1.5 }}>
-                            <span style={{ lineHeight: 1.5, display: 'block', fontWeight: 'bold', fontSize: 18 }}>
-                                {data?.fullName}
-                            </span>
-                            <span style={{ lineHeight: 1.5 }}>{data?.roles}</span>
+                            {isLoading ? (
+                                <Skeleton active={true} />
+                            ) : (
+                                <span style={{ lineHeight: 1.5, display: 'block', fontWeight: 'bold', fontSize: 18 }}>
+                                    {data?.fullName}
+                                </span>
+                            )}
+                            {isLoading ? (
+                                <Skeleton active={true} />
+                            ) : (
+                                <span style={{ lineHeight: 1.5 }}>{data?.roles}</span>
+                            )}
                         </span>
                     </div>
                 </Dropdown>

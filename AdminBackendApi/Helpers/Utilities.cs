@@ -115,6 +115,53 @@ internal partial class Utilities
         }
     }
 
+    internal static string ReadFile(string fileName, string path)
+    {
+        string fileContent = string.Empty;
+        try
+        {
+            fileContent = File.ReadAllText(WebConfig.PathServer + path + "/" + fileName);
+        }
+        catch (Exception e)
+        {
+            AddLogError(e);
+        }
+        return fileContent;
+    }
+
+    /// <summary>
+    /// Xoá file
+    /// </summary>
+    internal static int DeleteFile(string fileName, string path)
+    {
+        string name = WebConfig.PathServer + path + "/" + fileName;
+        FileInfo info = new(name);
+        if (info.Exists)
+        {
+            info.Delete();
+            return 1;
+        }
+        return 0;
+    }
+
+    internal static string GenerateUniqueId()
+    {
+        HashSet<string> uniqueIds = [];
+        Random random = new();
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        string id;
+        do
+        {
+            string randomPart = new string(Enumerable.Repeat(chars, 5)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+            string dateTimePart = DateTime.Now.ToString("yyyyMMddHHmmssfff"); // Format: yyyyMMddHHmmssfff (e.g., 20230524153030123)
+            id = $"{dateTimePart}-{randomPart}";
+        } while (!uniqueIds.Add(id));
+
+        return id;
+    }
+
+
     /// <summary>
     /// replace chuỗi unicode
     /// remove special character 
@@ -136,8 +183,9 @@ internal partial class Utilities
                 unicode = unicode.Replace("™", "");
             }
         }
-        catch
+        catch (Exception e)
         {
+            AddLogError(e);
         }
         return unicode;
     }
@@ -161,8 +209,17 @@ internal partial class Utilities
             unicode = MyRegex7().Replace(unicode, "y");
             unicode = MyRegex8().Replace(unicode, "");
         }
-        catch { }
+        catch (Exception e)
+        {
+            AddLogError(e);
+        }
         return unicode;
+    }
+
+    internal static int RandomNumber(int min, int max)
+    {
+        Random random = new();
+        return random.Next(min, max);
     }
 
     [GeneratedRegex("[á|à|ả|ã|ạ|â|ă|ấ|ầ|ẩ|ẫ|ậ|ắ|ằ|ẳ|ẵ|ặ]", RegexOptions.IgnoreCase, "en-VN")]
@@ -181,4 +238,5 @@ internal partial class Utilities
     private static partial Regex MyRegex7();
     [GeneratedRegex("[,|~|@|/|.|:|?|#|$|%|&|*|(|)|+|”|“|'|\"|!|`|–]", RegexOptions.IgnoreCase, "en-VN")]
     private static partial Regex MyRegex8();
+
 }

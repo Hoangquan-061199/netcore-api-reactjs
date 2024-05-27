@@ -17,7 +17,12 @@ const initialState: UserType = {
         email: '',
         createdDate: '',
         userName: '',
-    }
+    },
+    UserUpdateLogin: {
+        fullName: '',
+        urlPicture: '',
+        email: '',
+    },
 };
 
 const userAdminSlice = createSlice({
@@ -43,11 +48,19 @@ const userAdminSlice = createSlice({
                 createdDate: action.payload.createdDate,
                 userName: action.payload.userName,
             };
-        }
+        },
+        UpdateAccountLogin: (state, action) => {
+            state.UserUpdateLogin = {
+                fullName: action.payload.fullName,
+                urlPicture: action.payload.urlPicture,
+                email: action.payload.email,
+            };
+        },
     },
 });
 
 const userAdminReduce = userAdminSlice.reducer;
-export const { userHeader } = userAdminSlice.actions;
+export const { userHeader, userUpdateGet, UpdateAccountLogin } = userAdminSlice.actions;
 export default userAdminReduce;
-export const selectCurrentUserId = (state: any) => state.userAdmin.UserHeader.userId;
+// export const selectCurrentUserUpdateLogin = (state: any) => state.UserUpdateLogin;
+export const selectCurrentUserUpdateLogin = (state: UserType) => state.UserUpdateLogin;

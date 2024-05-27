@@ -76,7 +76,18 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-
+app.UseStaticFiles(new StaticFileOptions()
+{
+    OnPrepareResponse = r =>
+    {
+        string path = r.File.PhysicalPath!;
+        if (path.EndsWith(".gif") || path.EndsWith(".jpg") || path.EndsWith(".jpeg") || path.EndsWith(".png") || path.EndsWith(".svg") || path.EndsWith(".webp"))
+        {
+            TimeSpan maxAge = new(365, 0, 0, 0);
+            r.Context.Response.Headers.Append("Cache-Control", "max-age=" + maxAge.TotalSeconds);
+        }
+    }
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

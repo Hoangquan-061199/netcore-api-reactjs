@@ -2,7 +2,7 @@
 
 internal interface IDapperDA
 {
-    int Delete<T>(T obj);
+    Task<int> Delete(dynamic id, string nameTable);
     Task<int> Insert<T>(T obj);
     Task<int> Update<T>(T obj);
     int InsertNoId<T>(T obj);

@@ -1,6 +1,6 @@
 import { Button, Dropdown, MenuProps, Space, Table, TableColumnsType, TableProps, Tooltip } from 'antd';
 import { useState } from 'react';
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { DeleteOutlined } from '@ant-design/icons';
 
 interface DataType {
     id: React.Key;
@@ -20,7 +20,7 @@ const items: MenuProps['items'] = [
 ];
 
 const LogsAdmin = () => {
-    const [loading, setLoading] = useState(false);
+    const [loading] = useState(false);
 
     const columns: TableColumnsType<DataType> = [
         {

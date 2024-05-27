@@ -14,14 +14,15 @@ const LoginPage = () => {
     const onFinish: FormProps<LoginRequest>['onFinish'] = async (values) => {
         try {
             let rs: any = await loginapi(values).unwrap();
-            if (rs.error && rs.error.status === 400) {
-                message.error(rs.error.data.message);
+            if (rs.error) {
+                message.error(rs.message);
             } else {
                 message.success(rs.message);
                 dispatch(setCredentials({ ...rs }));
                 navigate('/');
             }
         } catch (e) {
+            console.log(e);
             message.error('Đăng nhập thất bại :)');
         }
     };
