@@ -28,6 +28,21 @@ internal partial class Utilities
         return hashed;
     }
 
+    internal static List<string> FolderToListString(string array)
+        {
+            List<string> lst = [];
+            try
+            {
+                if (!string.IsNullOrEmpty(array))
+                {
+                    array = array.Trim('/');
+                    lst = [.. array.Split('/')];
+                }
+            }
+            catch { }
+            return lst.Where(x => !string.IsNullOrEmpty(x)).ToList();
+        }
+
     /// <summary>
     /// Tạo Key salt ngẫu nhiên
     /// </summary>

@@ -1,6 +1,22 @@
 import { Menu } from 'antd';
 import Sider from 'antd/es/layout/Sider';
-import { OrderedListOutlined, BarChartOutlined, DashboardOutlined, ClusterOutlined, UserOutlined } from '@ant-design/icons';
+import {
+    OrderedListOutlined,
+    BarChartOutlined,
+    UsergroupAddOutlined,
+    DashboardOutlined,
+    ClusterOutlined,
+    UserOutlined,
+    SettingOutlined,
+    TranslationOutlined,
+    ShareAltOutlined,
+    LinkOutlined,
+    MailOutlined,
+    DeleteColumnOutlined,
+    LayoutOutlined,
+    ApartmentOutlined,
+    FileImageOutlined
+} from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 
 type props = {
@@ -29,32 +45,55 @@ const Sidebar = ({ collapsed }: props) => {
         {
             key: '3',
             icon: <ClusterOutlined />,
-            label: 'Danh mục',
+            label: 'Sản phẩm',
             children: [
                 {
-                    key: 'danh-muc-bai-viet',
-                    label: <Link to="/danh-muc-bai-viet">Danh mục bài viết</Link>,
+                    key: '/module-products',
+                    label: <Link to="/module-products">Danh mục sản phẩm</Link>,
                 },
                 {
-                    key: 'danh-muc-san-pham',
-                    label: <Link to="/danh-muc-san-pham">Danh mục sản phẩm</Link>,
+                    key: '/products',
+                    label: <Link to="/products">Sản phẩm</Link>,
+                },
+                {
+                    key: '/attributes',
+                    label: <Link to="/attributes">Thuộc tính</Link>,
                 },
             ],
         },
         {
             key: '4',
             icon: <OrderedListOutlined />,
-            label: 'Nội dung',
+            label: 'Bài viết',
             children: [
                 {
-                    key: 'bai-viet',
-                    label: <Link to="/bai-viet">Bài viết</Link>,
+                    key: '/module-contents',
+                    label: <Link to="/module-contents">Danh mục bài viết</Link>,
                 },
                 {
-                    key: 'san-pham',
-                    label: <Link to="/san-pham">Sản phẩm</Link>,
+                    key: '/contents',
+                    label: <Link to="/contents">Bài viết</Link>,
+                },
+                {
+                    key: '/other-content',
+                    label: <Link to="/other-content">Nội dung khác</Link>,
                 },
             ],
+        },
+        {
+            key: '/layouts',
+            icon: <LayoutOutlined />,
+            label: <Link to="/layouts">Layouts</Link>,
+        },
+        {
+            key: '/menus',
+            icon: <ApartmentOutlined />,
+            label: <Link to="/menus">Menus</Link>,
+        },
+        {
+            key: '/banners',
+            icon: <FileImageOutlined />,
+            label: <Link to="/banners">Banners</Link>,
         },
         {
             key: 'dev',
@@ -73,8 +112,48 @@ const Sidebar = ({ collapsed }: props) => {
         },
         {
             key: '/user-admin',
-            icon:  <UserOutlined />,
+            icon: <UserOutlined />,
             label: <Link to="/user-admin">Tài khoản</Link>,
+        },
+        {
+            key: '/department',
+            icon: <UsergroupAddOutlined />,
+            label: <Link to="/department">Phòng ban</Link>,
+        },
+        {
+            key: 'system',
+            type: 'group',
+            label: 'Hệ thống',
+        },
+        {
+            key: '/systems',
+            icon: <SettingOutlined />,
+            label: <Link to="/systems">Cấu hình</Link>,
+        },
+        {
+            key: '/resources',
+            icon: <TranslationOutlined />,
+            label: <Link to="/resources">Resources</Link>,
+        },
+        {
+            key: '/block-ip',
+            icon: <DeleteColumnOutlined />,
+            label: <Link to="/block-ip">Block IP</Link>,
+        },
+        {
+            key: '/template-email',
+            icon: <MailOutlined />,
+            label: <Link to="/template-email">Template email</Link>,
+        },
+        {
+            key: '/redirect-url',
+            icon: <LinkOutlined />,
+            label: <Link to="/redirect-url">Redirect Url</Link>,
+        },
+        {
+            key: '/sitemap',
+            icon: <ShareAltOutlined />,
+            label: <Link to="/sitemap">Sitemap</Link>,
         },
     ];
     return (
@@ -93,7 +172,7 @@ const Sidebar = ({ collapsed }: props) => {
                 // onCollapse={(collapsed, type) => {
                 //     console.log(collapsed, type);
                 // }}
-                >
+            >
                 <div
                     className="demo-logo-vertical"
                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 15, height: 64 }}>
@@ -185,7 +264,7 @@ const Sidebar = ({ collapsed }: props) => {
                 <Menu
                     theme="light"
                     mode="inline"
-                    style={{ fontSize: 13 }}
+                    style={{ fontSize: 13, maxHeight: 'calc(100vh - 64px)', overflowY: 'auto' }}
                     defaultSelectedKeys={[location.pathname]}
                     items={items}
                 />

@@ -14,6 +14,7 @@
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.4" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
+    <PackageReference Include="System.Drawing.Common" Version="8.0.6" />
     <PackageReference Include="System.Text.Json" Version="8.0.3" />
   </ItemGroup>
 
@@ -23,6 +24,8 @@
     <Folder Include="DataMapping/" />
     <Folder Include="Requests/Auths/" />
     <Folder Include="wwwroot/" />
+    <Folder Include="wwwroot/Libs/" />
+    <Folder Include="wwwroot/Temp/" />
     <Folder Include="wwwroot/Uploads/" />
   </ItemGroup>
 

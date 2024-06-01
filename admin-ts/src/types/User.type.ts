@@ -44,3 +44,10 @@ export type UpdateAccountResponse = {
     email: string;
     urlPicture: string;
 }
+
+export type ModalPermissions = {
+    type: 'role' | 'tree' | 'add' | 'edit';
+    title: string;
+    width?: number;
+    // userId: string;
+} 

@@ -10,6 +10,7 @@ const LoginPage = () => {
     const [loginapi, { isLoading }] = useLoginMutation();
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    document.title = 'Đăng nhập';
 
     const onFinish: FormProps<LoginRequest>['onFinish'] = async (values) => {
         try {

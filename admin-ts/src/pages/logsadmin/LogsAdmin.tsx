@@ -1,4 +1,15 @@
-import { Button, Dropdown, MenuProps, Space, Table, TableColumnsType, TableProps, Tooltip } from 'antd';
+import {
+    Button,
+    Dropdown,
+    MenuProps,
+    message,
+    Popconfirm,
+    PopconfirmProps,
+    Space,
+    Table,
+    TableColumnsType,
+    TableProps,
+} from 'antd';
 import { useState } from 'react';
 import { DeleteOutlined } from '@ant-design/icons';
 
@@ -11,16 +22,51 @@ interface DataType {
     user: string;
 }
 
-const items: MenuProps['items'] = [
-    {
-        key: '1',
-        label: 'Xoá tất cả',
-        icon: <DeleteOutlined />,
-    },
-];
+
 
 const LogsAdmin = () => {
     const [loading] = useState(false);
+    document.title = 'Logs Admin';
+
+    const confirm: PopconfirmProps['onConfirm'] = (e) => {
+        console.log(e);
+        message.success('Click on Yes');
+    };
+
+    const cancel: PopconfirmProps['onCancel'] = (e) => {
+        console.log(e);
+        message.error('Click on No');
+    };
+
+    const confirmALL: PopconfirmProps['onConfirm'] = (e) => {
+        console.log(e);
+        message.success('Click on Yes all');
+    };
+
+    const cancelAll: PopconfirmProps['onCancel'] = (e) => {
+        console.log(e);
+        message.error('Click on No all');
+    };
+
+    const items: MenuProps['items'] = [
+        {
+            key: '1',
+            label: (
+                <Popconfirm
+                    title="Xoá các logs đã chọn"
+                    description={() => (
+                        <p>Bạn có chắc muốn xoá tất cả các logs đã chọn chứ? <br/> Xoá xong sẽ không thể khôi phục lại được :)</p>
+                    )}
+                    onConfirm={confirmALL}
+                    onCancel={cancelAll}
+                    okText="Yes"
+                    cancelText="No">
+                    Xoá tất cả
+                </Popconfirm>
+            ),
+            icon: <DeleteOutlined />,
+        },
+    ];
 
     const columns: TableColumnsType<DataType> = [
         {
@@ -45,13 +91,25 @@ const LogsAdmin = () => {
         },
         { title: 'Nội dung', dataIndex: 'content' },
         {
-            title: (
-                <Dropdown menu={{ items }} placement="bottom">
-                    <Button>Hành động</Button>
-                </Dropdown>
-            ),
             dataIndex: 'actiontype',
             align: 'center',
+            render: () => {
+                return (
+                    <Space>
+                        <Popconfirm
+                            title="Xoá Log "
+                            description="Bạn chắc chắn muốn xoá log này"
+                            onConfirm={confirm}
+                            onCancel={cancel}
+                            okText="Yes"
+                            cancelText="No">
+                            <Button size="small" danger={true}>
+                                <DeleteOutlined />
+                            </Button>
+                        </Popconfirm>
+                    </Space>
+                );
+            },
         },
     ];
 
@@ -63,13 +121,6 @@ const LogsAdmin = () => {
             createdDate: '12/2/2024',
             content: 'Nội dung',
             user: 'quan',
-            actiontype: (
-                <Space>
-                    <Tooltip title="Xoá log">
-                        <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-                    </Tooltip>
-                </Space>
-            ),
         },
         {
             id: 2,
@@ -78,13 +129,6 @@ const LogsAdmin = () => {
             createdDate: '12/2/2024',
             content: 'Nội dung',
             user: 'quan',
-            actiontype: (
-                <Space>
-                    <Tooltip title="Xoá log">
-                        <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-                    </Tooltip>
-                </Space>
-            ),
         },
         {
             id: 3,
@@ -93,13 +137,6 @@ const LogsAdmin = () => {
             createdDate: '12/2/2024',
             content: 'Nội dung',
             user: 'quan',
-            actiontype: (
-                <Space>
-                    <Tooltip title="Xoá log">
-                        <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-                    </Tooltip>
-                </Space>
-            ),
         },
         {
             id: 4,
@@ -108,13 +145,6 @@ const LogsAdmin = () => {
             createdDate: '12/2/2024',
             content: 'Nội dung',
             user: 'quan',
-            actiontype: (
-                <Space>
-                    <Tooltip title="Xoá log">
-                        <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-                    </Tooltip>
-                </Space>
-            ),
         },
         {
             id: 5,
@@ -123,13 +153,6 @@ const LogsAdmin = () => {
             createdDate: '12/2/2024',
             content: 'Nội dung',
             user: 'quan',
-            actiontype: (
-                <Space>
-                    <Tooltip title="Xoá log">
-                        <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-                    </Tooltip>
-                </Space>
-            ),
         },
         {
             id: 6,
@@ -138,13 +161,6 @@ const LogsAdmin = () => {
             createdDate: '12/2/2024',
             content: 'Nội dung',
             user: 'quan',
-            actiontype: (
-                <Space>
-                    <Tooltip title="Xoá log">
-                        <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-                    </Tooltip>
-                </Space>
-            ),
         },
         {
             id: 5,
@@ -153,13 +169,6 @@ const LogsAdmin = () => {
             createdDate: '12/2/2024',
             content: 'Nội dung',
             user: 'quan',
-            actiontype: (
-                <Space>
-                    <Tooltip title="Xoá log">
-                        <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-                    </Tooltip>
-                </Space>
-            ),
         },
         {
             id: 5,
@@ -168,13 +177,6 @@ const LogsAdmin = () => {
             createdDate: '12/2/2024',
             content: 'Nội dung',
             user: 'quan',
-            actiontype: (
-                <Space>
-                    <Tooltip title="Xoá log">
-                        <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-                    </Tooltip>
-                </Space>
-            ),
         },
         {
             id: 5,
@@ -183,13 +185,6 @@ const LogsAdmin = () => {
             createdDate: '12/2/2024',
             content: 'Nội dung',
             user: 'quan',
-            actiontype: (
-                <Space>
-                    <Tooltip title="Xoá log">
-                        <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-                    </Tooltip>
-                </Space>
-            ),
         },
         {
             id: 5,
@@ -198,13 +193,6 @@ const LogsAdmin = () => {
             createdDate: '12/2/2024',
             content: 'Nội dung',
             user: 'quan',
-            actiontype: (
-                <Space>
-                    <Tooltip title="Xoá log">
-                        <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-                    </Tooltip>
-                </Space>
-            ),
         },
         {
             id: 5,
@@ -213,13 +201,6 @@ const LogsAdmin = () => {
             createdDate: '12/2/2024',
             content: 'Nội dung',
             user: 'quan',
-            actiontype: (
-                <Space>
-                    <Tooltip title="Xoá log">
-                        <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-                    </Tooltip>
-                </Space>
-            ),
         },
         {
             id: 5,
@@ -228,13 +209,6 @@ const LogsAdmin = () => {
             createdDate: '12/2/2024',
             content: 'Nội dung',
             user: 'quan',
-            actiontype: (
-                <Space>
-                    <Tooltip title="Xoá log">
-                        <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-                    </Tooltip>
-                </Space>
-            ),
         },
         {
             id: 5,
@@ -243,13 +217,6 @@ const LogsAdmin = () => {
             createdDate: '12/2/2024',
             content: 'Nội dung',
             user: 'quan',
-            actiontype: (
-                <Space>
-                    <Tooltip title="Xoá log">
-                        <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-                    </Tooltip>
-                </Space>
-            ),
         },
         {
             id: 5,
@@ -258,13 +225,6 @@ const LogsAdmin = () => {
             createdDate: '12/2/2024',
             content: 'Nội dung',
             user: 'quan',
-            actiontype: (
-                <Space>
-                    <Tooltip title="Xoá log">
-                        <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-                    </Tooltip>
-                </Space>
-            ),
         },
         {
             id: 5,
@@ -273,13 +233,6 @@ const LogsAdmin = () => {
             createdDate: '12/2/2024',
             content: 'Nội dung',
             user: 'quan',
-            actiontype: (
-                <Space>
-                    <Tooltip title="Xoá log">
-                        <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-                    </Tooltip>
-                </Space>
-            ),
         },
         {
             id: 5,
@@ -288,13 +241,6 @@ const LogsAdmin = () => {
             createdDate: '12/2/2024',
             content: 'Nội dung',
             user: 'quan',
-            actiontype: (
-                <Space>
-                    <Tooltip title="Xoá log">
-                        <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-                    </Tooltip>
-                </Space>
-            ),
         },
         {
             id: 5,
@@ -303,13 +249,6 @@ const LogsAdmin = () => {
             createdDate: '12/2/2024',
             content: 'Nội dung',
             user: 'quan',
-            actiontype: (
-                <Space>
-                    <Tooltip title="Xoá log">
-                        <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-                    </Tooltip>
-                </Space>
-            ),
         },
         {
             id: 5,
@@ -318,13 +257,6 @@ const LogsAdmin = () => {
             createdDate: '12/2/2024',
             content: 'Nội dung',
             user: 'quan',
-            actiontype: (
-                <Space>
-                    <Tooltip title="Xoá log">
-                        <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-                    </Tooltip>
-                </Space>
-            ),
         },
         {
             id: 5,
@@ -333,13 +265,6 @@ const LogsAdmin = () => {
             createdDate: '12/2/2024',
             content: 'Nội dung',
             user: 'quan',
-            actiontype: (
-                <Space>
-                    <Tooltip title="Xoá log">
-                        <DeleteOutlined style={{ color: 'red', cursor: 'pointer' }} />
-                    </Tooltip>
-                </Space>
-            ),
         },
     ];
 
@@ -360,7 +285,12 @@ const LogsAdmin = () => {
     };
 
     return (
-        <div>
+        <div style={{ padding: 15 }}>
+            <Space style={{ paddingBottom: 15 }}>
+                <Dropdown menu={{ items }} placement="bottom">
+                    <Button>Hành động</Button>
+                </Dropdown>
+            </Space>
             <Table
                 rowSelection={rowSelection}
                 columns={columns}

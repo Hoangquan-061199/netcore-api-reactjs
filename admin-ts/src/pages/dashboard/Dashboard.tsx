@@ -1,6 +1,8 @@
 import Ckeditor from '../../components/ckeditor/Ckeditor';
 
 const Dashboard = () => {
+
+    document.title = 'Dashboard';
     return (
         <div>
             <div className="App">
