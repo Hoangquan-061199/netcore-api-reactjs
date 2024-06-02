@@ -26,7 +26,7 @@ public class LogAdminController : BaseController
         catch (Exception e)
         {
             Utilities.AddLogError(e);
-            return BadRequest(msg);
+            return NotFound(msg);
         }
     }
 
@@ -43,14 +43,14 @@ public class LogAdminController : BaseController
         try
         {
             int rs = await _logAdminRepositories.Delete(id);
-            if (rs == 0) return BadRequest(msg);
+            if (rs == 0) throw new Exception(msg.Message);
             msg.Message = "Xoá thành công <3";
             return Ok(msg);
         }
         catch (Exception e)
         {
             Utilities.AddLogError(e);
-            return BadRequest(msg);
+            return NotFound(msg);
         }
     }
 

@@ -1,12 +1,9 @@
-﻿
-using System.Collections;
+﻿using System.Collections;
 using System.IO.Compression;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
-using Newtonsoft.Json;
-using System.Drawing;
 using System.Text.RegularExpressions;
 
 namespace AdminBackendApi
@@ -18,41 +15,35 @@ namespace AdminBackendApi
         private readonly string _tempPath;
         private readonly string _filesRootPath;
         private readonly string _filesRootVirtual;
-        private Dictionary<string, string>? _settings;
-        private Dictionary<string, string>? _lang = null;
+        private readonly Dictionary<string, string>? _lang = null;
 
         public TinyMceController(IWebHostEnvironment env)
         {
             // Setup CMS paths to suit your environment (we usually inject settings for these)
             _systemRootPath = env.ContentRootPath;
-            _tempPath = _systemRootPath + "\\wwwroot\\Uploads\\Temp";
+            _tempPath = _systemRootPath + "/wwwroot/Uploads/Temp";
             _filesRootPath = "/wwwroot/Uploads";
             _filesRootVirtual = "/Uploads";
-            // Load Fileman settings
-            LoadSettings();
         }
 
-        private void LoadSettings()
+        readonly MessagesModel msg = new()
         {
-            _settings = JsonConvert.DeserializeObject<Dictionary<string, string>>(System.IO.File.ReadAllText(_systemRootPath + "/wwwroot/tinymce/conf.json"))!;
-            string langFile = _systemRootPath + "/wwwroot/tinymce/lang/" + GetSetting("LANG") + ".json";
-            if (!System.IO.File.Exists(langFile)) langFile = _systemRootPath + "/wwwroot/tinymce/lang/en.json";
-            _lang = JsonConvert.DeserializeObject<Dictionary<string, string>>(System.IO.File.ReadAllText(langFile))!;
-        }
-
-        // GET api/RoxyFileman - test entry point//]
-        [HttpGet]
-        [AllowAnonymous, Produces("text/plain"), ActionName("")]
-        public string Get() { return "RoxyFileman - access to API requires Authorisation"; }
+            Message = "Tải thất bại :)"
+        };
 
         #region API Actions
-        [HttpGet("DirList")]
-        public IActionResult DIRLIST(string type)
+        #region  Dir
+        [HttpPost("DirList")]
+        public IActionResult DIRLIST(string? type)
         {
             try
             {
                 DirectoryInfo d = new(GetFilesRoot());
-                if (!d.Exists) throw new Exception("Invalid files root directory. Check your configuration.");
+                if (!d.Exists)
+                {
+                    msg.Message = "Không tồn tại folder root uploads :)";
+                    throw new Exception(msg.Message);
+                }
                 ArrayList dirs = ListDirs(d.FullName);
                 dirs.Insert(0, d.FullName);
                 string localPath = _systemRootPath;
@@ -60,22 +51,213 @@ namespace AdminBackendApi
                 for (int i = 0; i < dirs.Count; i++)
                 {
                     string dir = (string)dirs[i]!;
-                    result += (result != string.Empty ? "," : string.Empty) + "{\"p\":\"" + MakeVirtualPath(dir.Replace(localPath, string.Empty).Replace("\\", "/")) + "\",\"f\":\"" + GetFiles(dir, type).Count.ToString() + "\",\"d\":\"" + Directory.GetDirectories(dir).Length.ToString() + "\"}";
+                    result += (result != string.Empty ? "," : string.Empty) + "{\"p\":\"" + MakeVirtualPath(dir.Replace(localPath, string.Empty).Replace("\\", "/")) + "\",\"f\":\"" + GetFiles(dir, type!).Count.ToString() + "\",\"d\":\"" + Directory.GetDirectories(dir).Length.ToString() + "\"}";
                 }
                 return Content("[" + result + "]", "application/json");
             }
-            catch (Exception ex) { return NotFound(GetErrorRes(ex.Message)); }
+            catch (Exception ex)
+            {
+                Utilities.AddLogError(ex);
+                return NotFound(msg);
+            }
         }
 
-        [HttpGet("FileList")]
-        public IActionResult FILESLIST(string d, string type)
+        [HttpPost("CopyDir")]
+        public IActionResult COPYDIR(string d, string n)
+        {
+            try
+            {
+                d = MakePhysicalPath(d);
+                n = MakePhysicalPath(n);
+                CheckPath(d);
+                CheckPath(n);
+                DirectoryInfo dir = new(FixPath(d));
+                DirectoryInfo newDir = new(FixPath(n + "/" + dir.Name));
+                if (!dir.Exists)
+                {
+                    msg.Message = "Thư mục không tồn tại";
+                    throw new Exception(msg.Message);
+                }
+                else if (newDir.Exists)
+                {
+                    msg.Message = "Thư mục mới dã tồn tại";
+                    throw new Exception(msg.Message);
+                }
+                else CopyDir(dir.FullName, newDir.FullName);
+                msg.Message = "Copy thư mục thành công";
+                return Ok(msg);
+            }
+            catch (Exception ex)
+            {
+                Utilities.AddLogError(ex);
+                return NotFound(msg);
+            }
+        }
+
+        [HttpPost("CreateDir")]
+        public IActionResult CREATEDIR(string d, string n)
         {
             try
             {
                 d = MakePhysicalPath(d);
                 CheckPath(d);
+                d = FixPath(d);
+                n = Utilities.ConvertRewrite(n);
+                d = Path.Combine(d, n);
+                if (!Directory.Exists(d)) Directory.CreateDirectory(d);
+                msg.Message = "Tạo thư mục thành công <3";
+                return Ok(msg);
+            }
+            catch (Exception ex)
+            {
+                Utilities.AddLogError(ex);
+                return NotFound(msg);
+            }
+        }
+
+        [HttpPost("DeleteDir")]
+        public IActionResult DELETEDIR(string d)
+        {
+            try
+            {
+                d = MakePhysicalPath(d);
+                CheckPath(d);
+                d = FixPath(d);
+                if (!Directory.Exists(d))
+                {
+                    msg.Message = "Thư mục không tồn tại";
+                    throw new Exception(msg.Message);
+                }
+                if (d == GetFilesRoot())
+                {
+                    msg.Message = "Không thể xoá thư mục gốc";
+                    throw new Exception(msg.Message);
+                }
+                if (Directory.GetDirectories(d).Length > 0 || Directory.GetFiles(d).Length > 0)
+                {
+                    msg.Message = "Xoá hết file thì mới xoá được thư mục";
+                    throw new Exception(msg.Message);
+                }
+                Directory.Delete(d);
+                msg.Message = "Xoá thư mục thành công";
+                return Ok(msg);
+            }
+            catch (Exception ex)
+            {
+                Utilities.AddLogError(ex);
+                return NotFound(msg);
+            }
+        }
+
+        [HttpGet("DownloadDir")]
+        public ActionResult DOWNLOADDIR(string d)
+        {
+            try
+            {
+                d = MakePhysicalPath(d);
+                d = FixPath(d);
+                if (!Directory.Exists(d))
+                {
+                    msg.Message = "Thư mục không tồn tai";
+                    throw new Exception(msg.Message);
+                }
+                string dirName = new FileInfo(d).Name;
+                string tmpZip = _tempPath + "/" + dirName + ".zip";
+                if (!Directory.Exists(_tempPath)) Directory.CreateDirectory(_tempPath);
+                if (System.IO.File.Exists(tmpZip)) System.IO.File.Delete(tmpZip);
+                ZipFile.CreateFromDirectory(d, tmpZip, CompressionLevel.Fastest, true);
+                return PhysicalFile(tmpZip, "application/zip", dirName + ".zip");
+            }
+            catch (Exception ex)
+            {
+                Utilities.AddLogError(ex);
+                return NotFound(msg);
+            }
+        }
+        [HttpPost("MoveDir")]
+        public IActionResult MOVEDIR(string d, string n)
+        {
+            try
+            {
+                d = MakePhysicalPath(d);
+                n = MakePhysicalPath(n);
+                CheckPath(d);
+                CheckPath(n);
+                DirectoryInfo source = new(FixPath(d));
+                DirectoryInfo dest = new(FixPath(Path.Combine(n, source.Name)));
+                if (dest.FullName.StartsWith(source.FullName))
+                {
+                    msg.Message = "Không thể di chuyển thư mục vào thư mục con của chính nó";
+                    throw new Exception(msg.Message);
+                }
+                if (!source.Exists)
+                {
+                    msg.Message = "Thư mục không tồn tại";
+                    throw new Exception(msg.Message);
+                }
+                if (dest.Exists)
+                {
+                    msg.Message = "Thư mục đã tồn tại";
+                    throw new Exception(msg.Message);
+                }
+                source.MoveTo(dest.FullName);
+                msg.Message = "Di chuyển thư mục thành công";
+                return Ok(msg);
+            }
+            catch (Exception ex)
+            {
+                Utilities.AddLogError(ex);
+                return NotFound(msg);
+            }
+        }
+        [HttpPost("RenameDir")]
+        public IActionResult RENAMEDIR(string d, string n)
+        {
+            try
+            {
+                d = MakePhysicalPath(d);
+                CheckPath(d);
+                DirectoryInfo source = new(FixPath(d));
+                DirectoryInfo dest = new(Path.Combine(source.Parent!.FullName, n));
+                if (source.FullName == GetFilesRoot())
+                {
+                    msg.Message = "Bạn không thể đổi tên thư mục gốc";
+                    throw new Exception(msg.Message);
+                }
+                if (!source.Exists)
+                {
+                    msg.Message = "Thư mục không tồn tại";
+                    throw new Exception(msg.Message);
+                }
+                if (dest.Exists)
+                {
+                    msg.Message = "Tên thư mục đã tồn tại";
+                    throw new Exception(msg.Message);
+                }
+                source.MoveTo(dest.FullName);
+                msg.Message = "Đổi tên thư mục thành công";
+                return Ok(msg);
+            }
+            catch (Exception ex)
+            {
+                Utilities.AddLogError(ex);
+                return NotFound(msg);
+            }
+        }
+
+
+        #endregion
+
+        #region  file
+        [HttpPost("FileList")]
+        public IActionResult FILESLIST(string? d, string? type)
+        {
+            try
+            {
+                d = MakePhysicalPath(d!);
+                CheckPath(d);
                 string fullPath = FixPath(d);
-                List<string> files = GetFiles(fullPath, type);
+                List<string> files = GetFiles(fullPath, type!);
                 StringBuilder result = new();
                 for (int i = 0; i < files.Count; i++)
                 {
@@ -92,26 +274,11 @@ namespace AdminBackendApi
                 }
                 return Content("[" + result.ToString() + "]");
             }
-            catch (Exception ex) { return NotFound(GetErrorRes(ex.Message)); }
-        }
-
-        [HttpPost("CopyDir")]
-        public IActionResult COPYDIR(string d, string n)
-        {
-            try
+            catch (Exception ex)
             {
-                d = MakePhysicalPath(d);
-                n = MakePhysicalPath(n);
-                CheckPath(d);
-                CheckPath(n);
-                DirectoryInfo dir = new(FixPath(d));
-                DirectoryInfo newDir = new(FixPath(n + "/" + dir.Name));
-                if (!dir.Exists) throw new Exception(LangRes("E_CopyDirInvalidPath"));
-                else if (newDir.Exists) throw new Exception(LangRes("E_DirAlreadyExists"));
-                else CopyDir(dir.FullName, newDir.FullName);
-                return Content(GetSuccessRes());
+                Utilities.AddLogError(ex);
+                return NotFound(msg);
             }
-            catch (Exception ex) { return NotFound(GetErrorRes(ex.Message)); }
         }
 
         [HttpPost("CopyFile")]
@@ -120,69 +287,30 @@ namespace AdminBackendApi
             try
             {
                 f = MakePhysicalPath(f);
+                n = MakePhysicalPath(n);
                 CheckPath(f);
+                CheckPath(n);
                 FileInfo file = new(FixPath(f));
                 n = FixPath(n);
-                if (!file.Exists) throw new Exception(LangRes("E_CopyFileInvalisPath"));
-                else
+                if (!file.Exists)
                 {
-                    try
-                    {
-                        System.IO.File.Copy(file.FullName, Path.Combine(n, MakeUniqueFilename(n, file.Name)));
-                        return Content(GetSuccessRes());
-                    }
-                    catch (Exception) { throw new Exception(LangRes("E_CopyFile")); }
+                    msg.Message = "File không tồn tại";
+                    throw new Exception(msg.Message);
                 }
+                if (!Directory.Exists(n))
+                {
+                    msg.Message = "Thư mục sao chép không tồn tại";
+                    throw new Exception(msg.Message);
+                }
+                System.IO.File.Copy(file.FullName, Path.Combine(n, MakeUniqueFilename(n, file.Name)));
+                msg.Message = "Sao chép file thành công";
+                return Ok(msg.Message);
             }
-            catch (Exception ex) { return NotFound(GetErrorRes(ex.Message)); }
-        }
-
-        [HttpPost("CreateDir")]
-        public IActionResult CREATEDIR(string d, string n)
-        {
-            try
+            catch (Exception ex)
             {
-                d = MakePhysicalPath(d);
-                CheckPath(d);
-                d = FixPath(d);
-                if (!Directory.Exists(d)) throw new Exception(LangRes("E_CreateDirInvalidPath"));
-                else
-                {
-                    try
-                    {
-                        n = Utilities.ConvertRewrite(n);
-                        d = Path.Combine(d, n);
-                        if (!Directory.Exists(d)) Directory.CreateDirectory(d);
-                        return Content(GetSuccessRes());
-                    }
-                    catch (Exception) { throw new Exception(LangRes("E_CreateDirFailed")); }
-                }
+                Utilities.AddLogError(ex);
+                return NotFound(msg);
             }
-            catch (Exception ex) { return NotFound(GetErrorRes(ex.Message)); }
-        }
-
-        [HttpPost("DeleteDir")]
-        public IActionResult DELETEDIR(string d)
-        {
-            try
-            {
-                d = MakePhysicalPath(d);
-                CheckPath(d);
-                d = FixPath(d);
-                if (!Directory.Exists(d)) throw new Exception(LangRes("E_DeleteDirInvalidPath"));
-                else if (d == GetFilesRoot()) throw new Exception(LangRes("E_CannotDeleteRoot"));
-                else if (Directory.GetDirectories(d).Length > 0 || Directory.GetFiles(d).Length > 0) throw new Exception(LangRes("E_DeleteNonEmpty"));
-                else
-                {
-                    try
-                    {
-                        Directory.Delete(d);
-                        return Content(GetSuccessRes());
-                    }
-                    catch (Exception) { throw new Exception(LangRes("E_CannotDeleteDir")); }
-                }
-            }
-            catch (Exception ex) { return NotFound(GetErrorRes(ex.Message)); }
         }
 
         [HttpPost("DeleteFile")]
@@ -191,41 +319,41 @@ namespace AdminBackendApi
             //var d = "/wwwroot/resize/";
             List<string> list = Utilities.FolderToListString(f);
             int size = list.Count;
-            string name = list[(size - 1)];
+            string name = list[size - 1];
             try
             {
                 f = MakePhysicalPath(f);
                 CheckPath(f);
                 f = FixPath(f);
+                FileInfo file = new(f);
                 string path = f.Replace("/" + name, "/");
-                if (!System.IO.File.Exists(f)) throw new Exception(LangRes("E_DeleteFileInvalidPath"));
-                else
+                if (!file.Exists)
                 {
-                    try
-                    {
-                        System.IO.File.Delete(f);
-                        #region delete resize
-                        string? sizes = WebConfig.Sizes;
-                        string[] listsize = sizes!.Split(',');
-                        foreach (string item in listsize)
-                        {
-                            string resizePath = path.Replace("/Uploads/", "/resize/" + item + "/");
-                            string pathmobile = resizePath + Path.GetFileNameWithoutExtension(name) + "x" + item + "x4" + Path.GetExtension(name);
-                            if (System.IO.File.Exists(pathmobile))
-                            {
-                                System.IO.File.Delete(pathmobile);
-                            }
-                        }
-                        #endregion
-                        return Content(GetSuccessRes());
-                    }
-                    catch (Exception ex) { throw new Exception(LangRes("E_DeletеFile") + ex.Message); }
+                    msg.Message = "File không tồn tại";
+                    throw new Exception(msg.Message);
                 }
+                System.IO.File.Delete(f);
+                #region delete resize
+                string? sizes = WebConfig.Sizes;
+                string[] listsize = sizes!.Split(',');
+                foreach (string item in listsize)
+                {
+                    string resizePath = path.Replace("/Uploads/", "/resize/" + item + "/");
+                    string pathmobile = resizePath + Path.GetFileNameWithoutExtension(name) + "x" + item + "x4" + Path.GetExtension(name);
+                    if (System.IO.File.Exists(pathmobile)) System.IO.File.Delete(pathmobile);
+                }
+                #endregion
+                msg.Message = "Xoá file thành công";
+                return Ok(msg.Message);
             }
-            catch (Exception ex) { return NotFound(GetErrorRes(ex.Message)); }
+            catch (Exception ex)
+            {
+                Utilities.AddLogError(ex);
+                return NotFound(msg);
+            }
         }
 
-        [HttpPost("Download")]
+        [HttpGet("Download")]
         public ActionResult DOWNLOAD(string f)
         {
             try
@@ -233,60 +361,20 @@ namespace AdminBackendApi
                 f = MakePhysicalPath(f);
                 CheckPath(f);
                 FileInfo file = new(FixPath(f));
-                if (file.Exists)
+                if (!file.Exists)
                 {
-                    _ = new FileExtensionContentTypeProvider().TryGetContentType(file.FullName, out var contentType);
-                    return PhysicalFile(file.FullName, contentType ?? "application/octet-stream", file.Name);
+                    msg.Message = "File không tồn tại";
+                    throw new Exception(msg.Message);
                 }
-                else return NotFound();
+                _ = new FileExtensionContentTypeProvider().TryGetContentType(file.FullName, out var contentType);
+                return PhysicalFile(file.FullName, contentType ?? "application/octet-stream", file.Name);
             }
-            catch (Exception ex) { return NotFound(GetErrorRes(ex.Message)); }
-        }
-
-        [HttpPost("DownloadDir")]
-        public ActionResult DOWNLOADDIR(string d)
-        {
-            try
+            catch (Exception ex)
             {
-                d = MakePhysicalPath(d);
-                d = FixPath(d);
-                if (!Directory.Exists(d)) throw new Exception(LangRes("E_CreateArchive"));
-                string dirName = new FileInfo(d).Name;
-                string tmpZip = _tempPath + "/" + dirName + ".zip";
-                if (System.IO.File.Exists(tmpZip)) System.IO.File.Delete(tmpZip);
-                ZipFile.CreateFromDirectory(d, tmpZip, CompressionLevel.Fastest, true);
-                return PhysicalFile(tmpZip, "application/zip", dirName + ".zip");
+                Utilities.AddLogError(ex);
+                return NotFound(msg);
             }
-            catch (Exception ex) { return NotFound(GetErrorRes(ex.Message)); }
         }
-
-        [HttpPost("MoveDir")]
-        public IActionResult MOVEDIR(string d, string n)
-        {
-            try
-            {
-                d = MakePhysicalPath(d);
-                n = MakePhysicalPath(n);
-                CheckPath(d);
-                CheckPath(n);
-                DirectoryInfo source = new(FixPath(d));
-                DirectoryInfo dest = new(FixPath(Path.Combine(n, source.Name)));
-                if (dest.FullName.StartsWith(source.FullName)) throw new Exception(LangRes("E_CannotMoveDirToChild"));
-                else if (!source.Exists) throw new Exception(LangRes("E_MoveDirInvalisPath"));
-                else if (dest.Exists) throw new Exception(LangRes("E_DirAlreadyExists"));
-                else
-                {
-                    try
-                    {
-                        source.MoveTo(dest.FullName);
-                        return Content(GetSuccessRes());
-                    }
-                    catch (Exception) { throw new Exception(LangRes("E_MoveDir") + " \"" + d + "\""); }
-                }
-            }
-            catch (Exception ex) { return NotFound(GetErrorRes(ex.Message)); }
-        }
-
         [HttpPost("MoveFile")]
         public IActionResult MOVEFILE(string f, string n)
         {
@@ -298,48 +386,29 @@ namespace AdminBackendApi
                 CheckPath(n);
                 FileInfo source = new(FixPath(f));
                 FileInfo dest = new(FixPath(n));
-                if (!source.Exists) throw new Exception(LangRes("E_MoveFileInvalisPath"));
-                else if (dest.Exists) throw new Exception(LangRes("E_MoveFileAlreadyExists"));
-                else if (!CanHandleFile(dest.Name)) throw new Exception(LangRes("E_FileExtensionForbidden"));
-                else
+                if (!source.Exists)
                 {
-                    try
-                    {
-                        source.MoveTo(dest.FullName);
-                        return Content(GetSuccessRes());
-                    }
-                    catch (Exception) { throw new Exception(LangRes("E_MoveFile") + " \"" + f + "\""); }
+                    msg.Message = "File không tồn tại";
+                    throw new Exception(msg.Message);
                 }
-            }
-            catch (Exception ex) { return NotFound(GetErrorRes(ex.Message)); }
-        }
 
-[HttpPost("RenameDir")]
-        public IActionResult RENAMEDIR(string d, string n)
-        {
-            try
+                if (dest.Exists)
+                {
+                    msg.Message = "File đã tồn tại";
+                    throw new Exception(msg.Message);
+                }
+                source.MoveTo(dest.FullName);
+                msg.Message = "Di chuyển File thành công";
+                return Ok(msg);
+            }
+            catch (Exception ex)
             {
-                d = MakePhysicalPath(d);
-                CheckPath(d);
-                DirectoryInfo source = new(FixPath(d));
-                DirectoryInfo dest = new(Path.Combine(source.Parent!.FullName, n));
-                if (source.FullName == GetFilesRoot()) throw new Exception(LangRes("E_CannotRenameRoot"));
-                else if (!source.Exists) throw new Exception(LangRes("E_RenameDirInvalidPath"));
-                else if (dest.Exists) throw new Exception(LangRes("E_DirAlreadyExists"));
-                else
-                {
-                    try
-                    {
-                        source.MoveTo(dest.FullName);
-                        return Content(GetSuccessRes());
-                    }
-                    catch (Exception) { throw new Exception(LangRes("E_RenameDir") + " \"" + d + "\""); }
-                }
+                Utilities.AddLogError(ex);
+                return NotFound(msg);
             }
-            catch (Exception ex) { return NotFound(GetErrorRes(ex.Message)); }
         }
 
-[HttpPost("RenameFile")]
+        [HttpPost("RenameFile")]
         public IActionResult RENAMEFILE(string f, string n)
         {
             try
@@ -348,154 +417,88 @@ namespace AdminBackendApi
                 CheckPath(f);
                 FileInfo source = new(FixPath(f));
                 FileInfo dest = new(Path.Combine(source.Directory!.FullName, n));
-                if (!source.Exists) throw new Exception(LangRes("E_RenameFileInvalidPath"));
-                else if (!CanHandleFile(n)) throw new Exception(LangRes("E_FileExtensionForbidden"));
-                else
+                if (!source.Exists)
                 {
-                    try
-                    {
-                        source.MoveTo(dest.FullName);
-                        return Content(GetSuccessRes());
-                    }
-                    catch (Exception ex) { throw new Exception(ex.Message + "; " + LangRes("E_RenameFile") + " \"" + f + "\""); }
+                    msg.Message = "File không tồn tại";
+                    throw new Exception(msg.Message);
                 }
-            }
-            catch (Exception ex) { return NotFound(GetErrorRes(ex.Message)); }
-        }
-
-        [HttpPost("upload"), Produces("text/plain")]
-        public string UPLOAD(string d)
-        {
-            AddLogAdmin("upload-file-manager", "upload File: vào:" + d, "Upload-File");
-            try
-            {
-                d = MakePhysicalPath(d);
-                CheckPath(d);
-                d = FixPath(d);
-                string res = GetSuccessRes();
-                bool hasErrors = false;
-                try
-                {
-                    foreach (IFormFile file in HttpContext.Request.Form.Files)
-                    {
-                        if (file.Length <= 0)
-                        {
-                            hasErrors = true;
-                            return "<script>parent.fileUploaded(Chưa nhập file!);</script>";
-                        };
-                        if (!ImageExtensions.Contains(Path.GetExtension(file.FileName).ToLower()))
-                        {
-                            hasErrors = true;
-                            return "<script>parent.fileUploaded(File không đúng định dạng!);</script>";
-                        }
-                        if (!FileType.Contains(file.ContentType))
-                        {
-                            hasErrors = true;
-                            return "<script>parent.fileUploaded(File không đúng định dạng!);</script>";
-                        }
-                        if (file.Length > 200 * 1024 * 1024)
-                        {
-                            hasErrors = true;
-                            res = GetSuccessRes(LangRes("E_UploadNotAll"));
-                            return "<script>parent.fileUploaded(" + res + ");</script>";
-                            //return "<script>parent.fileUploaded(File quá lớn!);</script>";
-                        }
-                        // Common.AddLogEdit("upload File: vào:"+file.FileName, null,null,null);
-                        if (CanHandleFile(file.FileName))
-                        {
-                            FileInfo f = new(file.FileName);
-                            string filename = MakeUniqueFilename(d, f.Name);
-                            string dest = Path.Combine(d, filename);
-                            //string webPFileName = Utility.ConvertRewrite(Path.GetFileNameWithoutExtension(file.FileName)) + ".webp";
-                            //string webPImagePath = Path.Combine(d, webPFileName);
-                            //var width = 425;
-                            //string fileNameMobile = Utility.ConvertRewrite(Path.GetFileNameWithoutExtension(file.FileName)) + "-mb" + Path.GetExtension(file.FileName);
-                            //var destMobile = Path.Combine(d, fileNameMobile);
-                            #region image default
-                            using FileStream saveFile = new(dest, FileMode.Create);
-                            file.CopyTo(saveFile);
-                            var uploadedImage = Image.FromStream(saveFile);
-                            saveFile.Close();
-                            saveFile.Dispose();
-                            uploadedImage.Dispose();
-                            #endregion                           
-                        }
-                        else
-                        {
-                            hasErrors = true;
-                            res = GetSuccessRes(LangRes("E_UploadNotAll"));
-                        }
-                    }
-                }
-                catch (Exception ex) { res = GetErrorRes(ex.Message); }
-                if (IsAjaxUpload())
-                {
-                    if (hasErrors) res = GetErrorRes(LangRes("E_UploadNotAll"));
-                    return res;
-                }
-                else return "<script>parent.fileUploaded(" + res + ");</script>";
+                source.MoveTo(dest.FullName);
+                msg.Message = "Đổi tên File thành công";
+                return Ok(msg);
             }
             catch (Exception ex)
             {
-                if (!IsAjaxUpload()) return "<script>parent.fileUploaded(" + GetErrorRes(LangRes("E_UploadNoFiles")) + ");</script>";
-                else return GetErrorRes(ex.Message);
+                Utilities.AddLogError(ex);
+                return NotFound(msg);
             }
         }
-        public static readonly List<string> ImageExtensions =
-        [
-            ".jpg", ".jpeg", ".bmp", ".gif", ".webp", ".png", ".jped", ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".csv", ".zip", ".rar", ".svg", ".mp4", ".mp3", ".avi",
-            ".mov",".flv","wwmv", "mpeg-4", "mpeg-2"
-        ];
+
+        [HttpPost("upload"), Produces("text/plain")]
+        public IActionResult UPLOAD()
+        {
+            try
+            {
+                var d = HttpContext.Request.Form["d"];
+                if (string.IsNullOrEmpty(d))
+                {
+                    msg.Message = "Đường dẫn không tồn tại";
+                    throw new Exception(msg.Message);
+                }
+                d = MakePhysicalPath(d!);
+                CheckPath(d!);
+                d = FixPath(d!);
+                if (!Directory.Exists(d))
+                {
+                    msg.Message = "Thư mục upload không tồn tại";
+                    throw new Exception(msg.Message);
+                }
+                foreach (IFormFile file in HttpContext.Request.Form.Files)
+                {
+                    if (file.Length <= 0)
+                    {
+                        msg.Message = "Chưa nhập file";
+                        throw new Exception(msg.Message);
+                    };
+                    if (!FileType.Contains(file.ContentType))
+                    {
+                        msg.Message = "File không đúng đinh dạng";
+                        throw new Exception(msg.Message);
+                    }
+                    if (file.Length > 20 * 1024 * 1024)
+                    {
+                       msg.Message = "File không được quá 20mb";
+                        throw new Exception(msg.Message);
+                    }
+                    FileInfo f = new(file.FileName);
+                    string filename = MakeUniqueFilename(d!, f.Name);
+                    string dest = Path.Combine(d!, filename);
+                    #region image default
+                    using FileStream saveFile = new(dest, FileMode.Create);
+                    file.CopyTo(saveFile);
+                    saveFile.Close();
+                    saveFile.Dispose();
+                    AddLogAdmin("upload-file-manager", "upload File: vào:" + d, "Upload-File");
+                    #endregion
+                }
+                msg.Message = "Upload file thành công";
+                return Ok(msg);
+            }
+            catch (Exception ex)
+            {
+                Utilities.AddLogError(ex);
+                return NotFound(msg);
+            }
+        }
+
+        #endregion
         public static readonly List<string> FileType =
         [
             "image/png", "image/gif", "image/avif", "image/apng", "image/jpeg", "image/svg+xml", "image/webp", "image/vnd.microsoft.icon",
             "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv", "application/x-7z-compressed", "application/vnd.rar",  "audio/mpeg",
             "video/mp4", "video/x-msvideo", "audio/wav","video/mpeg"
         ];
-        [HttpPost("UploadImage")]
-        public ActionResult? UploadImage(IFormFile upload, string CKEditorFuncNum, string CKEditor, string langCode)
-        {
-            if (upload.Length <= 0) return null;
-            if (!ImageExtensions.Contains(Path.GetExtension(upload.FileName).ToLower()))
-            {
-                string NotImageMessage = "please choose a picture";
-                dynamic NotImage = JsonConvert.DeserializeObject("{ 'uploaded': 0, 'error': { 'message': \"" + NotImageMessage + "\"}}")!;
-                return NotImage;
-            }
-            if (!FileType.Contains(upload.ContentType))
-            {
-                string NotImageMessage = "please choose a picture";
-                dynamic NotImage = JsonConvert.DeserializeObject("{ 'uploaded': 0, 'error': { 'message': \"" + NotImageMessage + "\"}}")!;
-                return NotImage;
-            }
-            string fileName = Guid.NewGuid() + Path.GetExtension(upload.FileName).ToLower();
-            Image image = Image.FromStream(upload.OpenReadStream());
-            int width = image.Width;
-            int height = image.Height;
-            if ((width > 3000) || (height > 5000))
-            {
-                string DimensionErrorMessage = "Custom Message for error";
-                dynamic stuff = JsonConvert.DeserializeObject("{ 'uploaded': 0, 'error': { 'message': \"" + DimensionErrorMessage + "\"}}")!;
-                return stuff;
-            }
-
-            if (upload.Length > 110 * 1024 * 1024)
-            {
-                string LengthErrorMessage = "Custom Message for error";
-                dynamic stuff = JsonConvert.DeserializeObject("{ 'uploaded': 0, 'error': { 'message': \"" + LengthErrorMessage + "\"}}")!;
-                return stuff;
-            }
-            string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Uploads/images/ck", fileName);
-            using (FileStream stream = new FileStream(path, FileMode.Create))
-            {
-                upload.CopyTo(stream);
-            }
-            string url = $"{"/Uploads/images/ck/"}{fileName}";
-            string successMessage = "image is uploaded successfully";
-            dynamic success = JsonConvert.DeserializeObject("{ 'uploaded': 1,'fileName': \"" + fileName + "\",'data': \"" + url + "\", 'error': { 'message': \"" + successMessage + "\"}}")!;
-            return Content(url);
-        }
         #endregion
+        
         #region Utilities
         private string MakeVirtualPath(string path)
         {
@@ -510,7 +513,6 @@ namespace AdminBackendApi
         private string GetFilesRoot()
         {
             string ret = _filesRootPath;
-            if (GetSetting("SESSION_PATH_KEY") != string.Empty && HttpContext.Session.GetString(GetSetting("SESSION_PATH_KEY")) != null) ret = HttpContext.Session.GetString(GetSetting("SESSION_PATH_KEY"))!;
             ret = FixPath(ret!);
             return ret;
         }
@@ -527,7 +529,7 @@ namespace AdminBackendApi
             return ret;
         }
 
-        private List<string> GetFiles(string path, string type)
+        private static List<string> GetFiles(string path, string type)
         {
             List<string> ret = [];
             if (type == "#" || type == null) type = string.Empty;
@@ -536,7 +538,7 @@ namespace AdminBackendApi
             return ret;
         }
 
-        private string GetFileType(string ext)
+        private static string GetFileType(string ext)
         {
             string ret = "file";
             ext = ext.ToLower();
@@ -560,29 +562,10 @@ namespace AdminBackendApi
         private static double LinuxTimestamp(DateTime d)
         {
             DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0).ToLocalTime();
-            TimeSpan timeSpan = (d.ToLocalTime() - epoch);
+            TimeSpan timeSpan = d.ToLocalTime() - epoch;
             return timeSpan.TotalSeconds;
         }
 
-        private string GetSetting(string name)
-        {
-            string ret = string.Empty;
-            if (_settings!.TryGetValue(name, out string? value)) ret = value;
-            return ret;
-        }
-
-        private static string GetErrorRes(string msg) { return GetResultStr("error", msg); }
-
-        private static string GetResultStr(string type, string msg)
-        {
-            return "{\"res\":\"" + type + "\",\"msg\":\"" + msg.Replace("\"", "\\\"") + "\"}";
-        }
-
-        private string LangRes(string name) { return _lang!.TryGetValue(name, out string? value) ? value : name; }
-
-        private static string GetSuccessRes(string msg) { return GetResultStr("ok", msg); }
-
-        private static string GetSuccessRes() { return GetSuccessRes(string.Empty); }
 
         private static void CopyDir(string path, string dest)
         {
@@ -612,52 +595,6 @@ namespace AdminBackendApi
             }
             return ret;
         }
-        private bool RemoveExist(string f)
-        {
-            f = MakePhysicalPath(f);
-            f = FixPath(f);
-            if (!System.IO.File.Exists(f)) return false;
-            else
-            {
-                try
-                {
-                    System.IO.File.Delete(f);
-                    return true;
-                }
-                catch { return false; }
-            }
-        }
-
-        private bool CanHandleFile(string filename)
-        {
-            bool ret = false;
-            FileInfo file = new(filename);
-            string ext = file.Extension.Replace(".", string.Empty).ToLower();
-            string setting = GetSetting("FORBIDDEN_UPLOADS").Trim().ToLower();
-            if (setting != string.Empty)
-            {
-                ArrayList tmp = [.. MyRegex1().Split(setting)];
-                if (!tmp.Contains(ext)) ret = true;
-            }
-            setting = GetSetting("ALLOWED_UPLOADS").Trim().ToLower();
-            if (setting != string.Empty)
-            {
-                ArrayList tmp = [.. MyRegex().Split(setting)];
-                if (!tmp.Contains(ext)) ret = false;
-            }
-            return ret;
-        }
-
-        private bool IsAjaxUpload()
-        {
-            return (!string.IsNullOrEmpty(HttpContext.Request.Query["method"]) && HttpContext.Request.Query["method"].ToString() == "ajax");
-        }
-
-        [GeneratedRegex("\\s+")]
-        private static partial Regex MyRegex();
-        [GeneratedRegex("\\s+")]
-        private static partial Regex MyRegex1();
-
         #endregion
     }
 }

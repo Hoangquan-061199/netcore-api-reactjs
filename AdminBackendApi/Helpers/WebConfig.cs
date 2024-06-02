@@ -26,7 +26,7 @@ internal class WebConfig
         TimeoutRefresh = Configuration["Jwt:ExpiresRefesh"];
         KeyToken = Configuration["Jwt:Key"];
         TimeoutToken = Configuration["Jwt:Expires"];
-        Sizes = Configuration["Sizes"];
+        Sizes = Configuration["WebConfig:Sizes"];
         IsLogAdmin = !string.IsNullOrEmpty(Configuration["WebConfig:LogErrorAdmin"]) && Convert.ToBoolean(Configuration["WebConfig:LogErrorAdmin"]);
     }
 }

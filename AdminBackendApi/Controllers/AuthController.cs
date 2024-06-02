@@ -26,24 +26,24 @@ namespace AdminBackendApi
                 if (string.IsNullOrEmpty(req.Username) || string.IsNullOrEmpty(req.Password))
                 {
                     res.Message = "Vui lòng nhập các thông tin bắt buộc";
-                    return Ok(res);
+                    throw new Exception(res.Message);
                 }
 
                 UserAdmins? user = await _userRepositories.GetLogin(req.Username);
                 if (user == null)
                 {
                     res.Message = "Tài khoản mật khẩu không chính xác:)";
-                    return Ok(res);
+                    throw new Exception(res.Message);
                 }
                 if (!user.IsActive)
                 {
                     res.Message = "Tài khoản chưa được kích hoạt :)";
-                    return Ok(res);
+                    throw new Exception(res.Message);
                 }
                 if (user.IsLock)
                 {
                     res.Message = "Tài khoản của bạn đã bị khóa :)";
-                    return Ok(res);
+                    throw new Exception(res.Message);
                 }
                 string passwordSha256 = Utilities.GeneratePasswordHash(req.Password, user.PasswordSalt!);
                 if (passwordSha256 != user.Password)
@@ -53,15 +53,15 @@ namespace AdminBackendApi
                     {
                         int count = user.CountPassFail + 1;
                         int rs = await _userRepositories.UpdateCountFailLogin(count, user.UserName!);
-                        if (rs == 0) return Ok(res);
+                        if (rs == 0) throw new Exception(res.Message);
                         if (count == 6)
                         {
                             int rs2 = await _userRepositories.UpdateIsLockUser(user.UserName!);
-                            if (rs2 == 0) return Ok(res);
+                            if (rs2 == 0) throw new Exception(res.Message);;
                         }
-                        return Ok(res);
+                        throw new Exception(res.Message);;
                     }
-                    return Ok(res);
+                    throw new Exception(res.Message);
                 }
 
                 int rs3 = await _userRepositories.UpdateCountFailLogin(0, user.UserName!);
@@ -69,7 +69,6 @@ namespace AdminBackendApi
                 string token = CreateToken(user);
                 CreateToken(user, "RefreshToken");
                 res.Token = token;
-                res.Error = false;
                 res.Message = "Đăng nhập thành công :3";
                 return Ok(res);
             }
@@ -89,7 +88,6 @@ namespace AdminBackendApi
             Response.Cookies.Delete("RefreshToken");
             MessagesModel msg = new()
             {
-                Error = false,
                 Message = "Đăng xuất thành công :3"
             };
             return Ok(msg);
@@ -129,7 +127,6 @@ namespace AdminBackendApi
                 {
                     Token = tokenNew
                 };
-
                 return Ok(rs);
             }
             catch (Exception e)
@@ -151,12 +148,12 @@ namespace AdminBackendApi
                 if (string.IsNullOrEmpty(req.PasswordOld) || string.IsNullOrEmpty(req.PasswordNew) || string.IsNullOrEmpty(req.PasswordConfirm))
                 {
                     msg.Message = "Vui lòng nhập các trường bắt buộc :)";
-                    return Ok(msg);
+                    throw new Exception(msg.Message);
                 }
                 if (req.PasswordNew != req.PasswordConfirm)
                 {
                     msg.Message = "Mật khẩu xác nhận không chính xác :)";
-                    return Ok(msg);
+                    throw new Exception(msg.Message);
                 }
                 req.PasswordOld = Utilities.RemoveHTMLTag(req.PasswordOld);
                 req.PasswordNew = Utilities.RemoveHTMLTag(req.PasswordNew);
@@ -164,14 +161,13 @@ namespace AdminBackendApi
 
                 string token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
                 string? userId = GetUserAdminByToken(token);
-                if (string.IsNullOrEmpty(userId)) return Ok(msg);
-                UserAdmins? user = await _userRepositories.GetByUserId(userId);
-                if (user == null) return Ok(msg);
+                if (string.IsNullOrEmpty(userId)) throw new Exception(msg.Message);
+                UserAdmins? user = await _userRepositories.GetByUserId(userId) ?? throw new Exception(msg.Message);
                 string passwordSha256 = Utilities.GeneratePasswordHash(req.PasswordOld!, user.PasswordSalt!);
                 if (passwordSha256 != user.Password)
                 {
                     msg.Message = "Mật khẩu cũ không chính xác :)";
-                    return Ok(msg);
+                    throw new Exception(msg.Message);
                 }
                 string passwordSalt = Utilities.GeneratePasswordSalt();
                 string password = Utilities.GeneratePasswordHash(req.PasswordNew, passwordSalt);
@@ -183,8 +179,7 @@ namespace AdminBackendApi
                     ModifiedDate = DateTime.Now
                 };
                 int rs = await _userRepositories.UpdateForValue(passwordChange, "UserAdmins");
-                if (rs == 0) return Ok(msg);
-                msg.Error = false;
+                if (rs == 0) throw new Exception(msg.Message);
                 msg.Message = "Đổi mật khẩu thành công <3";
                 return Ok(msg);
             }
@@ -209,15 +204,13 @@ namespace AdminBackendApi
             {
                 string token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
                 string? userId = GetUserAdminByToken(token);
-                if (string.IsNullOrEmpty(userId)) return Ok(msg);
-                UserAdmins? user = await _userRepositories.GetByUserId(userId);
-                if (user == null) return Ok(msg);
+                if (string.IsNullOrEmpty(userId)) throw new Exception(msg.Message);
+                UserAdmins? user = await _userRepositories.GetByUserId(userId) ?? throw new Exception(msg.Message);
                 object obj = new{
                     UserId = userId
                 };
                 int rs = await _userRepositories.Delete(obj, "UserAdmins");
-                if (rs == 0) return Ok(msg);
-                msg.Error = false;
+                if (rs == 0) throw new Exception(msg.Message);
                 msg.Message = "Xoá tài khoản thành công :3";
                 return Ok(msg);
             }

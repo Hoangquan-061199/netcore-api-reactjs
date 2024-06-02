@@ -37,19 +37,19 @@ const Routers = () => {
                     <Route path="/department" element={<Department />} />
 
                     {/* websites */}
-                        {/* content */}
-                            <Route path="/contents" element={<Contents />} />
-                            <Route path="/other-content" element={<OtherContent />} />
-                            <Route path="/module-contents" element={<ModuleContents />} />
-                        {/* content */}
-                        {/* products */}
-                            <Route path="/products" element={<Products />} />
-                            <Route path="/attributes" element={<Attributes />} />
-                            <Route path="/module-products" element={<ModuleProducts />} />
-                        {/* products */}
-                        <Route path="/layouts" element={<Layouts />} />
-                        <Route path="/menus" element={<Menus />} />
-                        <Route path="/banners" element={<Banners />} />
+                    {/* content */}
+                    <Route path="/contents" element={<Contents />} />
+                    <Route path="/other-content" element={<OtherContent />} />
+                    <Route path="/module-contents" element={<ModuleContents />} />
+                    {/* content */}
+                    {/* products */}
+                    <Route path="/products" element={<Products />} />
+                    <Route path="/attributes" element={<Attributes />} />
+                    <Route path="/module-products" element={<ModuleProducts />} />
+                    {/* products */}
+                    <Route path="/layouts" element={<Layouts />} />
+                    <Route path="/menus" element={<Menus />} />
+                    <Route path="/banners" element={<Banners />} />
 
                     {/* websites */}
 
