@@ -34,15 +34,11 @@ const FormAccount = () => {
 
         try {
             let rs: any = await updateAccLoginApi(req).unwrap();
-            if (rs.error) {
-                message.error(rs.message);
-            } else {
-                message.success(rs.message);
-                dispatch(UpdateAccountLogin({ ...rs.obj }));
-            }
-        } catch (e) {
+            message.success(rs.message);
+            dispatch(UpdateAccountLogin({ ...rs.obj }));
+        } catch (e:any) {
             console.log(e);
-            message.error('Cập nhật thất bại :)');
+            message.error(e.data.message ?? 'Cập nhật thất bại :)');
         }
     };
 

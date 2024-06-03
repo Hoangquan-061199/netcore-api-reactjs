@@ -15,16 +15,12 @@ const LoginPage = () => {
     const onFinish: FormProps<LoginRequest>['onFinish'] = async (values) => {
         try {
             let rs: any = await loginapi(values).unwrap();
-            if (rs.error) {
-                message.error(rs.message);
-            } else {
-                message.success(rs.message);
-                dispatch(setCredentials({ ...rs }));
-                navigate('/');
-            }
-        } catch (e) {
+            message.success(rs.message);
+            dispatch(setCredentials({ ...rs }));
+            navigate('/');
+        } catch (e:any) {
             console.log(e);
-            message.error('Đăng nhập thất bại :)');
+            message.error(e.data.message ?? 'Đăng nhập thất bại :)');
         }
     };
 
@@ -48,10 +44,7 @@ const LoginPage = () => {
                     <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Tài khoản" />
                 </Form.Item>
                 <Form.Item name="password" rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}>
-                    <Input.Password
-                        prefix={<LockOutlined className="site-form-item-icon" />}
-                        placeholder="Mật khẩu"
-                    />
+                    <Input.Password prefix={<LockOutlined className="site-form-item-icon" />} placeholder="Mật khẩu" />
                 </Form.Item>
 
                 <Form.Item style={{ display: 'flex', justifyContent: 'center' }}>

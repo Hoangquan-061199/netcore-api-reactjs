@@ -23,6 +23,8 @@ import Attributes from '../pages/websites/products/Attributes';
 import Layouts from '../pages/layouts/Layouts';
 import Menus from '../pages/menus/Menus';
 import Banners from '../pages/banner/Banners';
+import _LayoutFileManager from '../filemanager/_LayoutFileManager';
+import FileManager from '../filemanager/FileManager';
 const Routers = () => {
     return (
         <>
@@ -61,6 +63,10 @@ const Routers = () => {
                     <Route path="/block-ip" element={<BlockIp />} />
                     <Route path="/template-email" element={<TemplateEmail />} />
                     {/* systems */}
+                </Route>
+
+                <Route path="/file-manager" element={<_LayoutFileManager />}>
+                    <Route index element={<FileManager />} />
                 </Route>
                 <Route path="/login" element={<_LayoutLogin />}>
                     <Route index element={<LoginPage />} />

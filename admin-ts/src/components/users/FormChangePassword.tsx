@@ -17,13 +17,9 @@ const FormChangePassword = () => {
     const handleLogout = async () => {
         try {
             let rs: any = await logoutApi();
-            if (rs.error) {
-                message.error(rs.message);
-            } else {
-                message.success(rs.data.message);
-                dispath(logout());
-                navigate('/login');
-            }
+            message.success(rs.data.message);
+            dispath(logout());
+            navigate('/login');
         } catch (e: any) {
             console.log(e);
             message.error('Đăng xuất tài khoản thất bại :)');
@@ -35,7 +31,7 @@ const FormChangePassword = () => {
             title: 'Bạn có muốn đăng xuất không?',
             icon: <ExclamationCircleFilled />,
             content: 'Đăng xuất bạn sẽ phải đăng nhập lại với mật khẩu mới :)',
-            onOk: async() => {
+            onOk: async () => {
                 console.log('OK');
                 await handleLogout();
             },
@@ -49,15 +45,11 @@ const FormChangePassword = () => {
         // console.log('Received values of form: ', values);
         try {
             let rs: any = await changePasswordApi(values).unwrap();
-            if (rs.error) {
-                message.error(rs.message);
-            } else {
                 message.success(rs.message);
                 showConfirm();
-            }
         } catch (e: any) {
             console.log(e);
-            message.error("Đổi mật khẩu thất bại :)");
+            message.error(e.data.message ?? 'Đổi mật khẩu thất bại :)');
         }
     };
 

@@ -16,13 +16,9 @@ const DeleteAccount = () => {
     const handleLogout = async () => {
         try {
             let logoutrs: any = await logoutApi();
-            if (logoutrs.error && logoutrs.error.status === 400) {
-                message.error(logoutrs.error.data.message);
-            } else {
-                message.success(logoutrs.data.message);
-                dispath(logout());
-                navigate('/login');
-            }
+            message.success(logoutrs.data.message);
+            dispath(logout());
+            navigate('/login');
         } catch (e: any) {
             console.log(e);
             message.error('Đăng xuất tài khoản thất bại :)');
@@ -38,15 +34,11 @@ const DeleteAccount = () => {
                 console.log('OK');
                 try {
                     let rs: any = await deleteAccApi();
-                    if (rs.error) {
-                        message.error(rs.data.message);
-                    } else {
-                        message.success(rs.data.message);
-                        await handleLogout();
-                    }
+                    message.success(rs.data.message);
+                    await handleLogout();
                 } catch (e: any) {
                     console.log(e);
-                    message.error('Xoá tài khoản thất bại');
+                    message.error(e.data.message ?? 'Xoá tài khoản thất bại');
                 }
             },
             onCancel() {

@@ -7,17 +7,17 @@ namespace AdminBackendApi;
 public class LogAdminController : BaseController
 {
     private readonly LogAdminRepositories _logAdminRepositories = new(WebConfig.ConnectionString!);
-
+    readonly MessagesModel msg = new()
+    {
+        Message = "Tải thất bại :)"
+    };
     /// <summary>
     /// Lấy ra tất cả bản ghi log 
     /// </summary>
     [HttpGet]
     public async Task<ActionResult> GetLog()
     {
-        MessagesModel msg = new()
-        {
-            Message = "Tải thất bại :)"
-        };
+
         try
         {
             List<LogAdmins>? list = await _logAdminRepositories.GetAll();
@@ -36,10 +36,7 @@ public class LogAdminController : BaseController
     [HttpDelete]
     public async Task<ActionResult> Detele(int id)
     {
-        MessagesModel msg = new()
-        {
-            Message = "Xoá thất bại :)"
-        };
+        msg.Message = "Xoá thất bại :)";
         try
         {
             int rs = await _logAdminRepositories.Delete(id);

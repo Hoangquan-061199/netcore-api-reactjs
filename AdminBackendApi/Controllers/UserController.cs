@@ -6,16 +6,17 @@ namespace AdminBackendApi;
 public class UserController : BaseController
 {
     private readonly UserRepositories _userRepositories = new(WebConfig.ConnectionString!);
+
+    readonly MessagesModel msg = new()
+    {
+        Message = "Tải thất bại :)"
+    };
     /// <summary>
     /// Lấy ra danh sách user
     /// </summary>
     [HttpGet]
     public async Task<IActionResult> GetUserAll([FromQuery] SearchModel search)
     {
-        MessagesModel msg = new()
-        {
-            Message = "Tải thất bại :)"
-        };
         try
         {
             List<UserAdminItem>? ListSearchs = await _userRepositories.GetListUserBySearch(search);
@@ -34,9 +35,6 @@ public class UserController : BaseController
     [HttpGet("GetUserHeader")]
     public async Task<IActionResult> GetUser()
     {
-        MessagesModel msg = new() {
-            Message = "Tải thất bại :)"
-        };
         try
         {
             var token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
@@ -65,9 +63,7 @@ public class UserController : BaseController
     [HttpGet("GetUserUpdate")]
     public async Task<IActionResult> GetUserUpdate()
     {
-         MessagesModel msg = new() {
-            Message = "Tải thất bại :)"
-        };
+
         try
         {
             var token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
@@ -100,10 +96,7 @@ public class UserController : BaseController
     [HttpPost]
     public async Task<IActionResult> Create(RequestCreateUser obj)
     {
-        MessagesModel msg = new()
-        {
-            Message = "Tạo tài khoản thất bại :)"
-        };
+        msg.Message = "Tạo tài khoản thất bại :)";
         try
         {
             obj.UserName = Utilities.RemoveHTMLTag(obj.UserName!);
@@ -161,10 +154,7 @@ public class UserController : BaseController
     [HttpPut]
     public async Task<IActionResult> Update(RequestUpdateUser obj)
     {
-        MessagesModel msg = new()
-        {
-            Message = "Cập nhật tài khoản thất bại :)"
-        };
+        msg.Message = "Cập nhật tài khoản thất bại :)";
         try
         {
             obj.FullName = Utilities.RemoveHTMLTag(obj.FullName!);
@@ -196,10 +186,7 @@ public class UserController : BaseController
     [HttpPatch("UpdateAccountLogin")]
     public async Task<IActionResult> UpdateAccountLogin([FromForm] RequestUpdateAccountLogin obj)
     {
-        MessagesModel msg = new()
-        {
-            Message = "Cập nhật tài khoản thất bại :)"
-        };
+        msg.Message = "Cập nhật tài khoản thất bại :)";
         try
         {
             if (string.IsNullOrEmpty(obj.FullName) || string.IsNullOrEmpty(obj.Email))
@@ -222,8 +209,10 @@ public class UserController : BaseController
                 {
                     url = file.UrlPicture;
                 }
-            }else {
-                 url = user.UrlPicture;
+            }
+            else
+            {
+                url = user.UrlPicture;
             }
             ResponseAccountUpdateLogin userRes = new()
             {
@@ -258,11 +247,7 @@ public class UserController : BaseController
     [HttpDelete]
     public async Task<IActionResult> Deleted(string UserId)
     {
-        MessagesModel msg = new()
-        {
-            Message = "Xoá tài khoản thất bại :)"
-        };
-
+        msg.Message = "Xoá tài khoản thất bại :)";
         try
         {
             UserAdmins? user = await _userRepositories.GetByUserId(UserId) ?? throw new Exception(msg.Message);
