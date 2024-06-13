@@ -4,18 +4,15 @@ using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
-using System.Text.RegularExpressions;
 
 namespace AdminBackendApi
 {
-    [Authorize]
     public partial class TinyMceController : BaseController
     {
         private readonly string _systemRootPath;
         private readonly string _tempPath;
         private readonly string _filesRootPath;
         private readonly string _filesRootVirtual;
-        private readonly Dictionary<string, string>? _lang = null;
 
         public TinyMceController(IWebHostEnvironment env)
         {
@@ -33,7 +30,9 @@ namespace AdminBackendApi
 
         #region API Actions
         #region  Dir
+    
         [HttpPost("DirList")]
+        [Authorize]
         public IActionResult DIRLIST(string? type)
         {
             try
@@ -63,6 +62,7 @@ namespace AdminBackendApi
         }
 
         [HttpPost("CopyDir")]
+        [Authorize]
         public IActionResult COPYDIR(string d, string n)
         {
             try
@@ -95,6 +95,7 @@ namespace AdminBackendApi
         }
 
         [HttpPost("CreateDir")]
+        [Authorize]
         public IActionResult CREATEDIR(string d, string n)
         {
             try
@@ -116,6 +117,7 @@ namespace AdminBackendApi
         }
 
         [HttpPost("DeleteDir")]
+        [Authorize]
         public IActionResult DELETEDIR(string d)
         {
             try
@@ -175,6 +177,7 @@ namespace AdminBackendApi
             }
         }
         [HttpPost("MoveDir")]
+        [Authorize]
         public IActionResult MOVEDIR(string d, string n)
         {
             try
@@ -211,6 +214,7 @@ namespace AdminBackendApi
             }
         }
         [HttpPost("RenameDir")]
+        [Authorize]
         public IActionResult RENAMEDIR(string d, string n)
         {
             try
@@ -250,6 +254,7 @@ namespace AdminBackendApi
 
         #region  file
         [HttpPost("FileList")]
+        [Authorize]
         public IActionResult FILESLIST(string? d, string? type)
         {
             try
@@ -272,7 +277,7 @@ namespace AdminBackendApi
                     result.Append(",\"h\":\"" + h.ToString() + "\"");
                     result.Append('}');
                 }
-                return Content("[" + result.ToString() + "]");
+                return result.Length > 0 ? Content("[" + result.ToString() + "]") : Content("");
             }
             catch (Exception ex)
             {
@@ -282,6 +287,7 @@ namespace AdminBackendApi
         }
 
         [HttpPost("CopyFile")]
+        [Authorize]
         public IActionResult COPYFILE(string f, string n)
         {
             try
@@ -304,7 +310,7 @@ namespace AdminBackendApi
                 }
                 System.IO.File.Copy(file.FullName, Path.Combine(n, MakeUniqueFilename(n, file.Name)));
                 msg.Message = "Sao chép file thành công";
-                return Ok(msg.Message);
+                return Ok(msg);
             }
             catch (Exception ex)
             {
@@ -314,6 +320,7 @@ namespace AdminBackendApi
         }
 
         [HttpPost("DeleteFile")]
+        [Authorize]
         public IActionResult DELETEFILE(string f)
         {
             //var d = "/wwwroot/resize/";
@@ -344,7 +351,7 @@ namespace AdminBackendApi
                 }
                 #endregion
                 msg.Message = "Xoá file thành công";
-                return Ok(msg.Message);
+                return Ok(msg);
             }
             catch (Exception ex)
             {
@@ -354,7 +361,7 @@ namespace AdminBackendApi
         }
 
         [HttpGet("Download")]
-        public ActionResult DOWNLOAD(string f)
+        public async Task<ActionResult> DOWNLOAD(string f)
         {
             try
             {
@@ -366,8 +373,15 @@ namespace AdminBackendApi
                     msg.Message = "File không tồn tại";
                     throw new Exception(msg.Message);
                 }
-                _ = new FileExtensionContentTypeProvider().TryGetContentType(file.FullName, out var contentType);
-                return PhysicalFile(file.FullName, contentType ?? "application/octet-stream", file.Name);
+                MemoryStream memory = new();
+                using (FileStream stream = new(file.FullName, FileMode.Open))
+                {
+                    await stream.CopyToAsync(memory);
+                }
+                memory.Position = 0;
+                // _ = new FileExtensionContentTypeProvider().TryGetContentType(file.FullName, out var contentType);
+                // return PhysicalFile(file.Name, contentType ?? "application/octet-stream", file.Name);
+                return File(memory, GetContentType(file.FullName), Path.GetFileName(file.FullName));
             }
             catch (Exception ex)
             {
@@ -376,6 +390,7 @@ namespace AdminBackendApi
             }
         }
         [HttpPost("MoveFile")]
+        [Authorize]
         public IActionResult MOVEFILE(string f, string n)
         {
             try
@@ -409,6 +424,7 @@ namespace AdminBackendApi
         }
 
         [HttpPost("RenameFile")]
+        [Authorize]
         public IActionResult RENAMEFILE(string f, string n)
         {
             try
@@ -433,12 +449,12 @@ namespace AdminBackendApi
             }
         }
 
-        [HttpPost("upload"), Produces("text/plain")]
-        public IActionResult UPLOAD()
+        [HttpPost("upload")]
+        [Authorize]
+        public IActionResult UPLOAD(string? d, IFormFileCollection files)
         {
             try
             {
-                var d = HttpContext.Request.Form["d"];
                 if (string.IsNullOrEmpty(d))
                 {
                     msg.Message = "Đường dẫn không tồn tại";
@@ -452,7 +468,7 @@ namespace AdminBackendApi
                     msg.Message = "Thư mục upload không tồn tại";
                     throw new Exception(msg.Message);
                 }
-                foreach (IFormFile file in HttpContext.Request.Form.Files)
+                foreach (IFormFile file in files)
                 {
                     if (file.Length <= 0)
                     {
@@ -466,7 +482,7 @@ namespace AdminBackendApi
                     }
                     if (file.Length > 20 * 1024 * 1024)
                     {
-                       msg.Message = "File không được quá 20mb";
+                        msg.Message = "File không được quá 20mb";
                         throw new Exception(msg.Message);
                     }
                     FileInfo f = new(file.FileName);
@@ -498,7 +514,7 @@ namespace AdminBackendApi
             "video/mp4", "video/x-msvideo", "audio/wav","video/mpeg"
         ];
         #endregion
-        
+
         #region Utilities
         private string MakeVirtualPath(string path)
         {
