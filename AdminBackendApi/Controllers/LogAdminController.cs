@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AdminBackendApi.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AdminBackendApi;
+namespace AdminBackendApi.Controllers;
 
 [Authorize]
 public class LogAdminController : BaseController

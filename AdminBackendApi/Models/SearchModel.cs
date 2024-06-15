@@ -1,4 +1,4 @@
-﻿namespace AdminBackendApi;
+﻿namespace AdminBackendApi.Models;
 
 public class SearchModel
 {

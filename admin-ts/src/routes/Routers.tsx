@@ -23,6 +23,7 @@ import Attributes from '../pages/websites/products/Attributes';
 import Layouts from '../pages/layouts/Layouts';
 import Menus from '../pages/menus/Menus';
 import Banners from '../pages/banner/Banners';
+import ListSystems from '../pages/systems/ListSystems';
 const Routers = () => {
     return (
         <>
@@ -55,6 +56,7 @@ const Routers = () => {
 
                     {/* systems */}
                     <Route path="/systems" element={<System />} />
+                    <Route path="/list-systems" element={<ListSystems />} />
                     <Route path="/resources" element={<Resources />} />
                     <Route path="/sitemap" element={<Sitemap />} />
                     <Route path="/redirect-url" element={<RedirectUrl />} />

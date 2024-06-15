@@ -1,7 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AdminBackendApi.DataMapping;
+using AdminBackendApi.Models;
+using AdminBackendApi.Repositories;
+using AdminBackendApi.Requests.UserAdmins;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AdminBackendApi;
+namespace AdminBackendApi.Controllers;
 [Authorize]
 public class UserController : BaseController
 {

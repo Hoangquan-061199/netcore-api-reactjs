@@ -3,9 +3,8 @@ using System.IO.Compression;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.StaticFiles;
 
-namespace AdminBackendApi
+namespace AdminBackendApi.Controllers
 {
     public partial class TinyMceController : BaseController
     {
@@ -30,7 +29,7 @@ namespace AdminBackendApi
 
         #region API Actions
         #region  Dir
-    
+
         [HttpPost("DirList")]
         [Authorize]
         public IActionResult DIRLIST(string? type)
@@ -550,7 +549,7 @@ namespace AdminBackendApi
             List<string> ret = [];
             if (type == "#" || type == null) type = string.Empty;
             string[] files = Directory.GetFiles(path);
-            foreach (string f in files) { if ((GetFileType(new FileInfo(f).Extension) == type) || (type == string.Empty)) ret.Add(f); }
+            foreach (string f in files) { if (GetFileType(new FileInfo(f).Extension) == type || type == string.Empty) ret.Add(f); }
             return ret;
         }
 

@@ -1,9 +1,10 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using AdminBackendApi.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
-namespace AdminBackendApi;
+namespace AdminBackendApi.Controllers;
 [Route($"{WebConfig.UrlStartApiAdmin}[controller]")]
 [ApiController]
 public class BaseController : ControllerBase

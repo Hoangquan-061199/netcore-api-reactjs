@@ -1,4 +1,4 @@
-﻿namespace AdminBackendApi;
+﻿namespace AdminBackendApi.ModelJsons;
 
 public class ResourceJson
 {

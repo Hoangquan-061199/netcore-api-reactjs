@@ -1,318 +1,321 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AdminBackendApi.DataMapping;
+using AdminBackendApi.Repositories;
+using AdminBackendApi.Requests.Auths;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace AdminBackendApi
+namespace AdminBackendApi.Controllers;
+
+public class AuthController : BaseController
 {
-    public class AuthController : BaseController
+    private readonly UserRepositories _userRepositories = new(WebConfig.ConnectionString!);
+
+    /// <summary>
+    /// Đăng nhập theo tài khoản và mật khẩu trả về mess và token, refreshtoken lưu trong cookie httponly
+    /// </summary>
+    [HttpPost("Login")]
+    public async Task<ActionResult> Login(RequestLogin req)
     {
-        private readonly UserRepositories _userRepositories = new(WebConfig.ConnectionString!);
-
-        /// <summary>
-        /// Đăng nhập theo tài khoản và mật khẩu trả về mess và token, refreshtoken lưu trong cookie httponly
-        /// </summary>
-        [HttpPost("Login")]
-        public async Task<ActionResult> Login(RequestLogin req)
+        ResponseLogin res = new()
         {
-            ResponseLogin res = new()
-            {
-                Message = "Đăng nhập thất bại :)"
-            };
+            Message = "Đăng nhập thất bại :)"
+        };
 
-            try
+        try
+        {
+            if (string.IsNullOrEmpty(req.Username) || string.IsNullOrEmpty(req.Password))
             {
-                if (string.IsNullOrEmpty(req.Username) || string.IsNullOrEmpty(req.Password))
-                {
-                    res.Message = "Vui lòng nhập các thông tin bắt buộc";
-                    throw new Exception(res.Message);
-                }
+                res.Message = "Vui lòng nhập các thông tin bắt buộc";
+                throw new Exception(res.Message);
+            }
 
-                UserAdmins? user = await _userRepositories.GetLogin(req.Username);
-                if (user == null)
+            UserAdmins? user = await _userRepositories.GetLogin(req.Username);
+            if (user == null)
+            {
+                res.Message = "Tài khoản mật khẩu không chính xác:)";
+                throw new Exception(res.Message);
+            }
+            if (!user.IsActive)
+            {
+                res.Message = "Tài khoản chưa được kích hoạt :)";
+                throw new Exception(res.Message);
+            }
+            if (user.IsLock)
+            {
+                res.Message = "Tài khoản của bạn đã bị khóa :)";
+                throw new Exception(res.Message);
+            }
+            string passwordSha256 = Utilities.GeneratePasswordHash(req.Password, user.PasswordSalt!);
+            if (passwordSha256 != user.Password)
+            {
+                res.Message = "Tài khoản mật khẩu không chính xác:)";
+                if (user.CountPassFail <= 6)
                 {
-                    res.Message = "Tài khoản mật khẩu không chính xác:)";
-                    throw new Exception(res.Message);
-                }
-                if (!user.IsActive)
-                {
-                    res.Message = "Tài khoản chưa được kích hoạt :)";
-                    throw new Exception(res.Message);
-                }
-                if (user.IsLock)
-                {
-                    res.Message = "Tài khoản của bạn đã bị khóa :)";
-                    throw new Exception(res.Message);
-                }
-                string passwordSha256 = Utilities.GeneratePasswordHash(req.Password, user.PasswordSalt!);
-                if (passwordSha256 != user.Password)
-                {
-                    res.Message = "Tài khoản mật khẩu không chính xác:)";
-                    if (user.CountPassFail <= 6)
+                    int count = user.CountPassFail + 1;
+                    int rs = await _userRepositories.UpdateCountFailLogin(count, user.UserName!);
+                    if (rs == 0) throw new Exception(res.Message);
+                    if (count == 6)
                     {
-                        int count = user.CountPassFail + 1;
-                        int rs = await _userRepositories.UpdateCountFailLogin(count, user.UserName!);
-                        if (rs == 0) throw new Exception(res.Message);
-                        if (count == 6)
-                        {
-                            int rs2 = await _userRepositories.UpdateIsLockUser(user.UserName!);
-                            if (rs2 == 0) throw new Exception(res.Message);;
-                        }
-                        throw new Exception(res.Message);;
+                        int rs2 = await _userRepositories.UpdateIsLockUser(user.UserName!);
+                        if (rs2 == 0) throw new Exception(res.Message); ;
                     }
-                    throw new Exception(res.Message);
+                    throw new Exception(res.Message); ;
                 }
+                throw new Exception(res.Message);
+            }
 
-                int rs3 = await _userRepositories.UpdateCountFailLogin(0, user.UserName!);
-                if (rs3 == 0) return Ok(res);
-                string token = CreateToken(user);
-                CreateToken(user, "RefreshToken");
-                res.Token = token;
-                res.Message = "Đăng nhập thành công :3";
-                return Ok(res);
-            }
-            catch (Exception e)
-            {
-                Utilities.AddLogError(e);
-                return NotFound(res);
-            }
+            int rs3 = await _userRepositories.UpdateCountFailLogin(0, user.UserName!);
+            if (rs3 == 0) return Ok(res);
+            string token = CreateToken(user);
+            CreateToken(user, "RefreshToken");
+            res.Token = token;
+            res.Message = "Đăng nhập thành công :3";
+            return Ok(res);
         }
-
-        /// <summary>
-        /// Đăng xuất tài khoản admin -> Xoá cookies
-        /// </summary>
-        [HttpPost("Logout")]
-        public ActionResult Logout()
+        catch (Exception e)
         {
-            Response.Cookies.Delete("RefreshToken");
-            MessagesModel msg = new()
+            Utilities.AddLogError(e);
+            return NotFound(res);
+        }
+    }
+
+    /// <summary>
+    /// Đăng xuất tài khoản admin -> Xoá cookies
+    /// </summary>
+    [HttpPost("Logout")]
+    public ActionResult Logout()
+    {
+        Response.Cookies.Delete("RefreshToken");
+        MessagesModel msg = new()
+        {
+            Message = "Đăng xuất thành công :3"
+        };
+        return Ok(msg);
+    }
+
+    /// <summary>
+    /// RefreshToken Tạo mã token mới khi token cũ hết hạn
+    /// </summary>
+    [HttpPost("RefreshToken")]
+    public ActionResult RefreshToken()
+    {
+        MessagesModel msg = new()
+        {
+            Message = "Invalid refresh token :)"
+        };
+        try
+        {
+            string refreshToken = Request.Cookies["RefreshToken"]!;
+            if (string.IsNullOrEmpty(refreshToken)) return Unauthorized(msg);
+            SecurityKey securitykey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(WebConfig.KeyRefresh!));
+            DateTime timeout = DateTime.Now.AddMinutes(Convert.ToInt32(WebConfig.TimeoutRefresh!));
+            TokenValidationParameters validationParameters = new()
             {
-                Message = "Đăng xuất thành công :3"
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKeys = [securitykey],
+                ValidateIssuer = true,
+                ValidIssuer = WebConfig.Issuer,
+                ValidateAudience = true,
+                ValidAudience = WebConfig.Audience,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.FromMinutes(Convert.ToInt32(WebConfig.TimeoutRefresh))
             };
+            CheckTokenModel checkToken = CheckToken(refreshToken, validationParameters);
+            string tokenNew = CreateToken(checkToken.User!);
+            CreateToken(checkToken.User!, "RefreshToken");
+            ResponseRefreshToken rs = new()
+            {
+                Token = tokenNew
+            };
+            return Ok(rs);
+        }
+        catch (Exception e)
+        {
+            Utilities.AddLogError(e);
+            return NotFound(msg);
+        }
+    }
+
+    [HttpPost("ChangePassword")]
+    public async Task<ActionResult> ChangePassword(RequestChangePassword req)
+    {
+        MessagesModel msg = new()
+        {
+            Message = "Đổi mật khẩu thất bại :)"
+        };
+        try
+        {
+            if (string.IsNullOrEmpty(req.PasswordOld) || string.IsNullOrEmpty(req.PasswordNew) || string.IsNullOrEmpty(req.PasswordConfirm))
+            {
+                msg.Message = "Vui lòng nhập các trường bắt buộc :)";
+                throw new Exception(msg.Message);
+            }
+            if (req.PasswordNew != req.PasswordConfirm)
+            {
+                msg.Message = "Mật khẩu xác nhận không chính xác :)";
+                throw new Exception(msg.Message);
+            }
+            req.PasswordOld = Utilities.RemoveHTMLTag(req.PasswordOld);
+            req.PasswordNew = Utilities.RemoveHTMLTag(req.PasswordNew);
+            req.PasswordConfirm = Utilities.RemoveHTMLTag(req.PasswordConfirm);
+
+            string token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
+            string? userId = GetUserAdminByToken(token);
+            if (string.IsNullOrEmpty(userId)) throw new Exception(msg.Message);
+            UserAdmins? user = await _userRepositories.GetByUserId(userId) ?? throw new Exception(msg.Message);
+            string passwordSha256 = Utilities.GeneratePasswordHash(req.PasswordOld!, user.PasswordSalt!);
+            if (passwordSha256 != user.Password)
+            {
+                msg.Message = "Mật khẩu cũ không chính xác :)";
+                throw new Exception(msg.Message);
+            }
+            string passwordSalt = Utilities.GeneratePasswordSalt();
+            string password = Utilities.GeneratePasswordHash(req.PasswordNew, passwordSalt);
+            object passwordChange = new
+            {
+                Password = password,
+                PasswordSalt = passwordSalt,
+                UserId = userId,
+                ModifiedDate = DateTime.Now
+            };
+            int rs = await _userRepositories.UpdateForValue(passwordChange, "UserAdmins");
+            if (rs == 0) throw new Exception(msg.Message);
+            msg.Message = "Đổi mật khẩu thành công <3";
             return Ok(msg);
         }
-
-        /// <summary>
-        /// RefreshToken Tạo mã token mới khi token cũ hết hạn
-        /// </summary>
-        [HttpPost("RefreshToken")]
-        public ActionResult RefreshToken()
+        catch (Exception e)
         {
-            MessagesModel msg = new()
+            Utilities.AddLogError(e);
+            return NotFound(msg);
+        }
+    }
+
+    /// <summary>
+    /// Xoá tài khoản
+    ///  </summary>   
+    [HttpDelete("DeleteAccount")]
+    public async Task<ActionResult> DeleteAccount()
+    {
+        MessagesModel msg = new()
+        {
+            Message = "Xoá tài khoản thất bại :)"
+        };
+        try
+        {
+            string token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
+            string? userId = GetUserAdminByToken(token);
+            if (string.IsNullOrEmpty(userId)) throw new Exception(msg.Message);
+            UserAdmins? user = await _userRepositories.GetByUserId(userId) ?? throw new Exception(msg.Message);
+            object obj = new
             {
-                Message = "Invalid refresh token :)"
+                UserId = userId
             };
-            try
-            {
-                string refreshToken = Request.Cookies["RefreshToken"]!;
-                if (string.IsNullOrEmpty(refreshToken)) return Unauthorized(msg);
-                SecurityKey securitykey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(WebConfig.KeyRefresh!));
-                DateTime timeout = DateTime.Now.AddMinutes(Convert.ToInt32(WebConfig.TimeoutRefresh!));
-                TokenValidationParameters validationParameters = new()
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKeys = [securitykey],
-                    ValidateIssuer = true,
-                    ValidIssuer = WebConfig.Issuer,
-                    ValidateAudience = true,
-                    ValidAudience = WebConfig.Audience,
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.FromMinutes(Convert.ToInt32(WebConfig.TimeoutRefresh))
-                };
-                CheckTokenModel checkToken = CheckToken(refreshToken, validationParameters);
-                string tokenNew = CreateToken(checkToken.User!);
-                CreateToken(checkToken.User!, "RefreshToken");
-                ResponseRefreshToken rs = new()
-                {
-                    Token = tokenNew
-                };
-                return Ok(rs);
-            }
-            catch (Exception e)
-            {
-                Utilities.AddLogError(e);
-                return NotFound(msg);
-            }
+            int rs = await _userRepositories.Delete(obj, "UserAdmins");
+            if (rs == 0) throw new Exception(msg.Message);
+            msg.Message = "Xoá tài khoản thành công :3";
+            return Ok(msg);
+        }
+        catch (Exception e)
+        {
+            Utilities.AddLogError(e);
+            return NotFound(msg);
+        }
+    }
+
+    /// <summary>
+    /// Tạo mã Token và RefreshToken
+    /// </summary>
+    private string CreateToken(UserAdmins user, string name = "Token")
+    {
+        JwtSecurityToken token = new();
+        List<Claim> claims =
+        [
+            new Claim(JwtRegisteredClaimNames.Jti, user.UserId.ToString()),
+            new Claim(ClaimTypes.Role, user.Roles!),
+            new Claim(JwtRegisteredClaimNames.Aud, WebConfig.Issuer!),
+            new Claim(JwtRegisteredClaimNames.Iss, WebConfig.Audience!)
+        ];
+
+        if (name == "Token")
+        {
+            SecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(WebConfig.KeyToken!));
+            SigningCredentials? creds = new(securityKey, SecurityAlgorithms.HmacSha256);
+            DateTime timeout = DateTime.Now.AddMinutes(Convert.ToInt32(WebConfig.TimeoutToken!));
+            token = new JwtSecurityToken(
+                WebConfig.Issuer,
+                WebConfig.Audience,
+                claims,
+                expires: timeout,
+                signingCredentials: creds
+            );
+        }
+        else
+        {
+            SecurityKey securitykey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(WebConfig.KeyRefresh!));
+            SigningCredentials? creds = new(securitykey, SecurityAlgorithms.HmacSha256);
+            DateTime timeout = DateTime.Now.AddMinutes(Convert.ToInt32(WebConfig.TimeoutRefresh!));
+            token = new JwtSecurityToken(
+                WebConfig.Issuer,
+                WebConfig.Audience,
+                claims,
+                expires: timeout,
+                signingCredentials: creds
+            );
         }
 
-        [HttpPost("ChangePassword")]
-        public async Task<ActionResult> ChangePassword(RequestChangePassword req)
-        {
-            MessagesModel msg = new()
-            {
-                Message = "Đổi mật khẩu thất bại :)"
-            };
-            try
-            {
-                if (string.IsNullOrEmpty(req.PasswordOld) || string.IsNullOrEmpty(req.PasswordNew) || string.IsNullOrEmpty(req.PasswordConfirm))
-                {
-                    msg.Message = "Vui lòng nhập các trường bắt buộc :)";
-                    throw new Exception(msg.Message);
-                }
-                if (req.PasswordNew != req.PasswordConfirm)
-                {
-                    msg.Message = "Mật khẩu xác nhận không chính xác :)";
-                    throw new Exception(msg.Message);
-                }
-                req.PasswordOld = Utilities.RemoveHTMLTag(req.PasswordOld);
-                req.PasswordNew = Utilities.RemoveHTMLTag(req.PasswordNew);
-                req.PasswordConfirm = Utilities.RemoveHTMLTag(req.PasswordConfirm);
+        string? jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
-                string token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
-                string? userId = GetUserAdminByToken(token);
-                if (string.IsNullOrEmpty(userId)) throw new Exception(msg.Message);
-                UserAdmins? user = await _userRepositories.GetByUserId(userId) ?? throw new Exception(msg.Message);
-                string passwordSha256 = Utilities.GeneratePasswordHash(req.PasswordOld!, user.PasswordSalt!);
-                if (passwordSha256 != user.Password)
-                {
-                    msg.Message = "Mật khẩu cũ không chính xác :)";
-                    throw new Exception(msg.Message);
-                }
-                string passwordSalt = Utilities.GeneratePasswordSalt();
-                string password = Utilities.GeneratePasswordHash(req.PasswordNew, passwordSalt);
-                object passwordChange = new
-                {
-                    Password = password,
-                    PasswordSalt = passwordSalt,
-                    UserId = userId,
-                    ModifiedDate = DateTime.Now
-                };
-                int rs = await _userRepositories.UpdateForValue(passwordChange, "UserAdmins");
-                if (rs == 0) throw new Exception(msg.Message);
-                msg.Message = "Đổi mật khẩu thành công <3";
-                return Ok(msg);
-            }
-            catch (Exception e)
+        if (name == "RefreshToken")
+        {
+            DateTime timeout = DateTime.Now.AddMinutes(Convert.ToInt32(WebConfig.TimeoutRefresh!));
+            Response.Cookies.Append("RefreshToken", jwt, new CookieOptions
             {
-                Utilities.AddLogError(e);
-                return NotFound(msg);
-            }
+                HttpOnly = true,
+                Path = "/",
+                Expires = timeout,
+                Secure = true // nếu là http thì đặt thành false
+            });
         }
+        return jwt;
+    }
 
-        /// <summary>
-        /// Xoá tài khoản
-        ///  </summary>   
-        [HttpDelete("DeleteAccount")]
-        public async Task<ActionResult> DeleteAccount()
+    /// <summary>
+    /// Kiểm tra mã Token và RefreshToken
+    /// </summary>
+    private CheckTokenModel CheckToken(string token, TokenValidationParameters para)
+    {
+        CheckTokenModel check = new()
         {
-            MessagesModel msg = new()
-            {
-                Message = "Xoá tài khoản thất bại :)"
-            };
-            try
-            {
-                string token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
-                string? userId = GetUserAdminByToken(token);
-                if (string.IsNullOrEmpty(userId)) throw new Exception(msg.Message);
-                UserAdmins? user = await _userRepositories.GetByUserId(userId) ?? throw new Exception(msg.Message);
-                object obj = new{
-                    UserId = userId
-                };
-                int rs = await _userRepositories.Delete(obj, "UserAdmins");
-                if (rs == 0) throw new Exception(msg.Message);
-                msg.Message = "Xoá tài khoản thành công :3";
-                return Ok(msg);
-            }
-            catch (Exception e)
-            {
-                Utilities.AddLogError(e);
-                return NotFound(msg);
-            }
-        }
-
-        /// <summary>
-        /// Tạo mã Token và RefreshToken
-        /// </summary>
-        private string CreateToken(UserAdmins user, string name = "Token")
+            User = new(),
+            IsToken = false
+        };
+        try
         {
-            JwtSecurityToken token = new();
-            List<Claim> claims =
-            [
-                new Claim(JwtRegisteredClaimNames.Jti, user.UserId.ToString()),
-                new Claim(ClaimTypes.Role, user.Roles!),
-                new Claim(JwtRegisteredClaimNames.Aud, WebConfig.Issuer!),
-                new Claim(JwtRegisteredClaimNames.Iss, WebConfig.Audience!)
-            ];
-
-            if (name == "Token")
+            JwtSecurityTokenHandler tokenHandler = new();
+            tokenHandler.ValidateToken(token, para, out var validatedToken);
+            var code = tokenHandler.ReadToken(token) as JwtSecurityToken;
+            string userId = code!.Claims.FirstOrDefault(x => x.Type == "jti")!.Value;
+            string role = code!.Claims.FirstOrDefault(x => x.Type == "jti")!.Value;
+            if (!string.IsNullOrEmpty(userId))
             {
-                SecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(WebConfig.KeyToken!));
-                SigningCredentials? creds = new(securityKey, SecurityAlgorithms.HmacSha256);
-                DateTime timeout = DateTime.Now.AddMinutes(Convert.ToInt32(WebConfig.TimeoutToken!));
-                token = new JwtSecurityToken(
-                    WebConfig.Issuer,
-                    WebConfig.Audience,
-                    claims,
-                    expires: timeout,
-                    signingCredentials: creds
-                );
-            }
-            else
-            {
-                SecurityKey securitykey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(WebConfig.KeyRefresh!));
-                SigningCredentials? creds = new(securitykey, SecurityAlgorithms.HmacSha256);
-                DateTime timeout = DateTime.Now.AddMinutes(Convert.ToInt32(WebConfig.TimeoutRefresh!));
-                token = new JwtSecurityToken(
-                    WebConfig.Issuer,
-                    WebConfig.Audience,
-                    claims,
-                    expires: timeout,
-                    signingCredentials: creds
-                );
-            }
-
-            string? jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
-            if (name == "RefreshToken")
-            {
-                DateTime timeout = DateTime.Now.AddMinutes(Convert.ToInt32(WebConfig.TimeoutRefresh!));
-                Response.Cookies.Append("RefreshToken", jwt, new CookieOptions
+                UserAdmins? user = _userRepositories.GetRoleByUserId(userId);
+                if (user != null)
                 {
-                    HttpOnly = true,
-                    Path = "/",
-                    Expires = timeout,
-                    Secure = true // nếu là http thì đặt thành false
-                });
-            }
-            return jwt;
-        }
-
-        /// <summary>
-        /// Kiểm tra mã Token và RefreshToken
-        /// </summary>
-        private CheckTokenModel CheckToken(string token, TokenValidationParameters para)
-        {
-            CheckTokenModel check = new()
-            {
-                User = new(),
-                IsToken = false
-            };
-            try
-            {
-                JwtSecurityTokenHandler tokenHandler = new();
-                tokenHandler.ValidateToken(token, para, out var validatedToken);
-                var code = tokenHandler.ReadToken(token) as JwtSecurityToken;
-                string userId = code!.Claims.FirstOrDefault(x => x.Type == "jti")!.Value;
-                string role = code!.Claims.FirstOrDefault(x => x.Type == "jti")!.Value;
-                if (!string.IsNullOrEmpty(userId))
-                {
-                    UserAdmins? user = _userRepositories.GetRoleByUserId(userId);
-                    if (user != null)
-                    {
-                        check.User.UserId = Guid.Parse(userId);
-                        check.User.Roles = user.Roles;
-                        check.IsToken = true;
-                    }
+                    check.User.UserId = Guid.Parse(userId);
+                    check.User.Roles = user.Roles;
+                    check.IsToken = true;
                 }
+            }
 
-                return check;
-            }
-            catch (Exception e)
-            {
-                Utilities.AddLogError(e);
-                return check;
-            }
+            return check;
+        }
+        catch (Exception e)
+        {
+            Utilities.AddLogError(e);
+            return check;
         }
     }
 }

@@ -1,8 +1,10 @@
-﻿using Dapper;
+﻿using AdminBackendApi.DataMapping;
+using AdminBackendApi.Models;
+using Dapper;
 using System.Data;
 using System.Data.SqlClient;
 
-namespace AdminBackendApi;
+namespace AdminBackendApi.Repositories;
 
 internal class UserRepositories(string connectionSql)
 {
@@ -20,7 +22,7 @@ internal class UserRepositories(string connectionSql)
 
     internal async Task<int> Delete(dynamic id, string tableName) => await _dapperDa.Delete(id, tableName);
 
-     /// <summary>
+    /// <summary>
     /// Update vào database
     /// </summary>
     internal async Task<int> UpdateForValue(dynamic obj, string tableName) => await _dapperDa.UpdateForValue(obj, tableName);
@@ -139,7 +141,7 @@ internal class UserRepositories(string connectionSql)
         }
     }
 
-     /// <summary>
+    /// <summary>
     /// Lấy ra Lấy ra user Theo userid
     /// </summary>
     internal async Task<UserAdmins?> GetUserHeaderByUserId(string userid)
@@ -158,7 +160,7 @@ internal class UserRepositories(string connectionSql)
         }
     }
 
-     /// <summary>
+    /// <summary>
     /// Lấy ra Lấy ra user Theo userid
     /// </summary>
     internal async Task<UserAdmins?> GetUserUpdateByUserId(string userid)
@@ -201,7 +203,7 @@ internal class UserRepositories(string connectionSql)
     /// <summary>
     /// GetUser by serach parameter
     /// </summary>
-    internal async Task<List<UserAdminItem>?> GetListUserBySearch(SearchModel search)
+    internal async Task<List<UserAdminItems>?> GetListUserBySearch(SearchModel search)
     {
         try
         {
@@ -217,7 +219,7 @@ internal class UserRepositories(string connectionSql)
                 start,
                 @size = search.PageSize
             });
-            var result = await connect.QueryAsync<UserAdminItem>("UserAdminsListSearch", paras, commandType: CommandType.StoredProcedure);
+            var result = await connect.QueryAsync<UserAdminItems>("UserAdminsListSearch", paras, commandType: CommandType.StoredProcedure);
             connect.Close();
             return result?.ToList();
         }

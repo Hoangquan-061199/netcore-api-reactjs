@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace AdminBackendApi;
+namespace AdminBackendApi.Controllers;
 
 public class TestController : BaseController
 {

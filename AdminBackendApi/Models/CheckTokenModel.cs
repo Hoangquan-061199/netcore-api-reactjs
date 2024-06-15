@@ -1,4 +1,6 @@
-﻿namespace AdminBackendApi;
+﻿using AdminBackendApi.DataMapping;
+
+namespace AdminBackendApi;
 
 public class CheckTokenModel
 {

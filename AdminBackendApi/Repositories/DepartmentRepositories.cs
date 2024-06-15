@@ -1,8 +1,10 @@
 ﻿using System.Data;
 using System.Data.SqlClient;
+using AdminBackendApi.DataMapping;
+using AdminBackendApi.Models;
 using Dapper;
 
-namespace AdminBackendApi;
+namespace AdminBackendApi.Repositories;
 
 internal class DepartmentRepositories(string connectionSql)
 {

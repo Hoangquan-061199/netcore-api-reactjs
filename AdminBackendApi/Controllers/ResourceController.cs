@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
-namespace AdminBackendApi;
+namespace AdminBackendApi.Controllers;
 
 [Authorize]
 public class ResourceController : BaseController

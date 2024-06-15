@@ -25,7 +25,6 @@
   <ItemGroup>
     <Folder Include="Controllers\" />
     <Folder Include="Dapper/" />
-    <Folder Include="DataMapping/" />
     <Folder Include="Requests/Auths/" />
     <Folder Include="wwwroot/" />
     <Folder Include="wwwroot/Libs/" />

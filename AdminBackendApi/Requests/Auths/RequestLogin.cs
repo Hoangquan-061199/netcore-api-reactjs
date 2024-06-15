@@ -1,4 +1,4 @@
-﻿namespace AdminBackendApi;
+﻿namespace AdminBackendApi.Requests.Auths;
 
 public class RequestLogin
 {

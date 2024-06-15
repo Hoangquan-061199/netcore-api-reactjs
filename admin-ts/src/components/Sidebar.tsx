@@ -126,9 +126,15 @@ const Sidebar = ({ collapsed }: props) => {
             label: 'Hệ thống',
         },
         {
+
             key: '/systems',
             icon: <SettingOutlined />,
             label: <Link to="/systems">Cấu hình</Link>,
+        },
+        {
+            key: '/list-systems',
+            icon: <SettingOutlined />,
+            label: <Link to="/list-systems">Danh sách cấu hình</Link>,
         },
         {
             key: '/resources',

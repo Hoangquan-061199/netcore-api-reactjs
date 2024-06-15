@@ -1,7 +1,7 @@
 ﻿using System.Data.SqlClient;
 using Dapper;
 
-namespace AdminBackendApi;
+namespace AdminBackendApi.Repositories;
 
 internal class LogAdminRepositories(string connectionSql)
 {

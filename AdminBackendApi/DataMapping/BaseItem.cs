@@ -1,6 +1,6 @@
-﻿namespace AdminBackendApi;
+﻿namespace AdminBackendApi.DataMapping;
 
-public class BaseItems
+public class BaseItem
 {
     public int TotalRecord { get; set; }
     public int ID { get; set; }
