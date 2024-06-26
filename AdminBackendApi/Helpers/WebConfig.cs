@@ -13,6 +13,7 @@ internal class WebConfig
     internal static string? KeyToken { get; set; }
     internal static bool IsLogAdmin { get; set; }
     internal static string? Sizes { get; set; }
+    internal static string? PassCode { get; set; }
 
     internal const string UrlStartApiAdmin = "/api/admin/";
     internal WebConfig(IConfiguration configuration, IWebHostEnvironment hostingEnvironment)
@@ -28,5 +29,6 @@ internal class WebConfig
         TimeoutToken = Configuration["Jwt:Expires"];
         Sizes = Configuration["WebConfig:Sizes"];
         IsLogAdmin = !string.IsNullOrEmpty(Configuration["WebConfig:LogErrorAdmin"]) && Convert.ToBoolean(Configuration["WebConfig:LogErrorAdmin"]);
+        PassCode = Configuration["WebConfig:PassCode"];
     }
 }

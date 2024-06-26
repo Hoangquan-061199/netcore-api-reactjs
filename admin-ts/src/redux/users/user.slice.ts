@@ -63,4 +63,5 @@ const userAdminReduce = userAdminSlice.reducer;
 export const { userHeader, userUpdateGet, UpdateAccountLogin } = userAdminSlice.actions;
 export default userAdminReduce;
 // export const selectCurrentUserUpdateLogin = (state: any) => state.UserUpdateLogin;
-export const selectCurrentUserUpdateLogin = (state: UserType) => state.UserUpdateLogin;
+export const selectCurrentUserUpdateLogin = (state: any) => state.userAdmin.UserUpdateLogin;
+export const selectCurrentUserHeader = (state: any) => state.userAdmin.UserHeader;

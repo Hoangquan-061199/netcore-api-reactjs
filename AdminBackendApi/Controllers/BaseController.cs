@@ -32,6 +32,7 @@ public class BaseController : ControllerBase
                         CreatedDate = DateTime.Now,
                         Content = content,
                         UserName = username,
+                        IsDeleted = false
                     };
                     DapperDA dapperDa = new(WebConfig.ConnectionString!);
                     _ = dapperDa.Insert(logAdmin);
@@ -101,5 +102,9 @@ public class BaseController : ControllerBase
                 {".webp", "image/webp"},
                 {".csv", "text/csv"}
             };
+    }
+
+    protected string GetPathServer() {
+        return HttpContext.Request.Scheme + "://" + HttpContext.Request.Host;
     }
 }

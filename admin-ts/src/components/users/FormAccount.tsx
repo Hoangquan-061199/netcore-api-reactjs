@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 import type { GetProp, UploadProps } from 'antd';
 import { UpdateAccountRequest } from '../../types/User.type';
-import { useDispatch } from 'react-redux';
-import { UpdateAccountLogin } from '../../redux/users/user.slice';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectCurrentUserHeader, UpdateAccountLogin, userHeader } from '../../redux/users/user.slice';
 import { getImageDomain } from '../../helpers/utilities';
 
 type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0];
@@ -24,7 +24,7 @@ const FormAccount = () => {
     const [imageUrl, setImageUrl] = useState<string>();
     const [file, setFile] = useState<FileType>();
     const dispatch = useDispatch();
-
+    const user = useSelector(selectCurrentUserHeader)
     const onFinish = async (values: any) => {
         let req: UpdateAccountRequest = {
             fullName: values.fullName,
@@ -35,8 +35,15 @@ const FormAccount = () => {
         try {
             let rs: any = await updateAccLoginApi(req).unwrap();
             message.success(rs.message);
-            dispatch(UpdateAccountLogin({ ...rs.obj }));
-        } catch (e:any) {
+            dispatch(UpdateAccountLogin({ ...rs.data }));
+            dispatch(
+                userHeader({
+                    ...user,
+                    fullName: rs.data.fullName,
+                    urlPicture: rs.data.urlPicture
+                })
+            );
+        } catch (e: any) {
             console.log(e);
             message.error(e.data.message ?? 'Cập nhật thất bại :)');
         }
@@ -59,10 +66,12 @@ const FormAccount = () => {
         const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/webp';
         if (!isJpgOrPng) {
             message.error('Chỉ hỗ trợ file JPG/PNG/WEBP <3');
+            return false;
         }
         const isLt1M = file.size / 1024 / 1024 < 1;
         if (!isLt1M) {
             message.error('file không được lớn hơn 1mb');
+            return false;
         }
         getBase64(file, (url) => {
             setLoading(false);

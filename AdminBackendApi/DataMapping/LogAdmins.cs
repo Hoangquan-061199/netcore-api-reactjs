@@ -8,4 +8,5 @@ public class LogAdmins
     public DateTime CreatedDate { get; set; }
     public string? Content { get; set; }
     public string? UserName { get; set; }
+    public bool IsDeleted { get; set; }
 }

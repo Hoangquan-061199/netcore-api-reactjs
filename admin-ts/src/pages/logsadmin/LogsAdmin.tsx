@@ -1,4 +1,5 @@
 import {
+    Breadcrumb,
     Button,
     Dropdown,
     MenuProps,
@@ -10,23 +11,29 @@ import {
     TableColumnsType,
     TableProps,
 } from 'antd';
-import { useState } from 'react';
-import { DeleteOutlined } from '@ant-design/icons';
-
-interface DataType {
-    id: React.Key;
-    action: string;
-    link: string;
-    createdDate: string;
-    content: string;
-    user: string;
-}
-
-
+import { useEffect, useState } from 'react';
+import { HomeOutlined, DeleteOutlined } from '@ant-design/icons';
+import { useGetLogAdminQuery } from '../../redux/logsadmin/LogsAdmin.service';
+import { searchModel } from '../../types/SearchModel.type';
+import { LogAdmin } from '../../types/LogAdmin.type';
+import { Link } from 'react-router-dom';
 
 const LogsAdmin = () => {
     const [loading] = useState(false);
-    document.title = 'Logs Admin';
+    const initArgs: searchModel = {
+        keyword: '',
+        sort: 0,
+        page: 0,
+        pageSize: 20,
+    };
+
+    const { data, isLoading } = useGetLogAdminQuery(initArgs);
+
+    useEffect(() => {
+        document.title = 'Logs Admin';
+    }, []);
+
+    console.log(data);
 
     const confirm: PopconfirmProps['onConfirm'] = (e) => {
         console.log(e);
@@ -55,7 +62,10 @@ const LogsAdmin = () => {
                 <Popconfirm
                     title="Xoá các logs đã chọn"
                     description={() => (
-                        <p>Bạn có chắc muốn xoá tất cả các logs đã chọn chứ? <br/> Xoá xong sẽ không thể khôi phục lại được :)</p>
+                        <p>
+                            Bạn có chắc muốn xoá tất cả các logs đã chọn chứ? <br /> Xoá xong sẽ không thể khôi phục lại
+                            được :)
+                        </p>
                     )}
                     onConfirm={confirmALL}
                     onCancel={cancelAll}
@@ -68,7 +78,7 @@ const LogsAdmin = () => {
         },
     ];
 
-    const columns: TableColumnsType<DataType> = [
+    const columns: TableColumnsType<LogAdmin> = [
         {
             title: 'ID',
             dataIndex: 'id',
@@ -113,162 +123,7 @@ const LogsAdmin = () => {
         },
     ];
 
-    const data = [
-        {
-            id: 1,
-            action: 'Sửa',
-            link: 'link',
-            createdDate: '12/2/2024',
-            content: 'Nội dung',
-            user: 'quan',
-        },
-        {
-            id: 2,
-            action: 'Sửa',
-            link: 'link',
-            createdDate: '12/2/2024',
-            content: 'Nội dung',
-            user: 'quan',
-        },
-        {
-            id: 3,
-            action: 'Sửa',
-            link: 'link',
-            createdDate: '12/2/2024',
-            content: 'Nội dung',
-            user: 'quan',
-        },
-        {
-            id: 4,
-            action: 'Sửa',
-            link: 'link',
-            createdDate: '12/2/2024',
-            content: 'Nội dung',
-            user: 'quan',
-        },
-        {
-            id: 5,
-            action: 'Sửa',
-            link: 'link',
-            createdDate: '12/2/2024',
-            content: 'Nội dung',
-            user: 'quan',
-        },
-        {
-            id: 6,
-            action: 'Sửa',
-            link: 'link',
-            createdDate: '12/2/2024',
-            content: 'Nội dung',
-            user: 'quan',
-        },
-        {
-            id: 5,
-            action: 'Sửa',
-            link: 'link',
-            createdDate: '12/2/2024',
-            content: 'Nội dung',
-            user: 'quan',
-        },
-        {
-            id: 5,
-            action: 'Sửa',
-            link: 'link',
-            createdDate: '12/2/2024',
-            content: 'Nội dung',
-            user: 'quan',
-        },
-        {
-            id: 5,
-            action: 'Sửa',
-            link: 'link',
-            createdDate: '12/2/2024',
-            content: 'Nội dung',
-            user: 'quan',
-        },
-        {
-            id: 5,
-            action: 'Sửa',
-            link: 'link',
-            createdDate: '12/2/2024',
-            content: 'Nội dung',
-            user: 'quan',
-        },
-        {
-            id: 5,
-            action: 'Sửa',
-            link: 'link',
-            createdDate: '12/2/2024',
-            content: 'Nội dung',
-            user: 'quan',
-        },
-        {
-            id: 5,
-            action: 'Sửa',
-            link: 'link',
-            createdDate: '12/2/2024',
-            content: 'Nội dung',
-            user: 'quan',
-        },
-        {
-            id: 5,
-            action: 'Sửa',
-            link: 'link',
-            createdDate: '12/2/2024',
-            content: 'Nội dung',
-            user: 'quan',
-        },
-        {
-            id: 5,
-            action: 'Sửa',
-            link: 'link',
-            createdDate: '12/2/2024',
-            content: 'Nội dung',
-            user: 'quan',
-        },
-        {
-            id: 5,
-            action: 'Sửa',
-            link: 'link',
-            createdDate: '12/2/2024',
-            content: 'Nội dung',
-            user: 'quan',
-        },
-        {
-            id: 5,
-            action: 'Sửa',
-            link: 'link',
-            createdDate: '12/2/2024',
-            content: 'Nội dung',
-            user: 'quan',
-        },
-        {
-            id: 5,
-            action: 'Sửa',
-            link: 'link',
-            createdDate: '12/2/2024',
-            content: 'Nội dung',
-            user: 'quan',
-        },
-        {
-            id: 5,
-            action: 'Sửa',
-            link: 'link',
-            createdDate: '12/2/2024',
-            content: 'Nội dung',
-            user: 'quan',
-        },
-        {
-            id: 5,
-            action: 'Sửa',
-            link: 'link',
-            createdDate: '12/2/2024',
-            content: 'Nội dung',
-            user: 'quan',
-        },
-    ];
-
-    const onChange: TableProps<DataType>['onChange'] = (pagination, filters, sorter, extra) => {
+    const onChange: TableProps<LogAdmin>['onChange'] = (pagination, filters, sorter, extra) => {
         console.log('params', pagination, filters, sorter, extra);
     };
 
@@ -290,13 +145,25 @@ const LogsAdmin = () => {
                 <Dropdown menu={{ items }} placement="bottom">
                     <Button>Hành động</Button>
                 </Dropdown>
+                <Breadcrumb
+                    items={[
+                        {
+                            title: <Link to={"/"}>
+                            <HomeOutlined />
+                            </Link>,
+                        },
+                        {
+                            title: 'Application',
+                        },
+                    ]}
+                />
             </Space>
             <Table
                 rowSelection={rowSelection}
                 columns={columns}
                 dataSource={data ?? []}
                 onChange={onChange}
-                loading={loading}
+                loading={isLoading}
                 // scroll={{ y: 500 }}
                 showSorterTooltip={{ target: 'sorter-icon' }}
             />

@@ -35,7 +35,7 @@ internal class UserRepositories(string connectionSql)
         try
         {
             SqlConnection connect = _dapperDa.GetOpenConnection();
-            IEnumerable<string>? rs = await connect.QueryAsync<string>("select UserName from UserAdmins where UserName = @name", new { name });
+            IEnumerable<string>? rs = await connect.QueryAsync<string>("select UserName from UserAdmins where IsDeleted = 0 and UserName = @name", new { name });
             connect.Close();
             return rs != null && rs.Any();
         }
@@ -130,7 +130,7 @@ internal class UserRepositories(string connectionSql)
         try
         {
             SqlConnection connect = _dapperDa.GetOpenConnection();
-            IEnumerable<UserAdmins>? rs = await connect.QueryAsync<UserAdmins>("SELECT [UserId],[UserName],[FullName],[Email],[Roles],[RoleActive],[ModuleAdminIds],[ModuleWebsiteIds],[IsDeleted],[IsShow],[IsActive],[CreatedDate],[ModifiedDate],[LockDate],[CountPassFail],[IsLock],[Password],[PasswordSalt],[DepartmentId],[UrlPicture] FROM [UserAdmins] Where UserId = @userid", new { userid });
+            IEnumerable<UserAdmins>? rs = await connect.QueryAsync<UserAdmins>("SELECT [UserId],[UserName],[FullName],[Email],[Roles],[RoleActive],[ModuleAdminIds],[ModuleWebsiteIds],[IsDeleted],[IsShow],[IsActive],[CreatedDate],[ModifiedDate],[LockDate],[CountPassFail],[IsLock],[Password],[PasswordSalt],[DepartmentId],[UrlPicture] FROM [UserAdmins] Where IsDeleted = 0 and UserId = @userid", new { userid });
             connect.Close();
             return rs != null && rs.Any() ? rs.FirstOrDefault() : null;
         }
@@ -149,7 +149,7 @@ internal class UserRepositories(string connectionSql)
         try
         {
             SqlConnection connect = _dapperDa.GetOpenConnection();
-            IEnumerable<UserAdmins>? rs = await connect.QueryAsync<UserAdmins>("SELECT [FullName],[UrlPicture],[Roles] FROM [UserAdmins] Where UserId = @userid", new { userid });
+            IEnumerable<UserAdmins>? rs = await connect.QueryAsync<UserAdmins>("SELECT [FullName],[UrlPicture],[Roles] FROM [UserAdmins] Where IsDeleted = 0 and UserId = @userid", new { userid });
             connect.Close();
             return rs != null && rs.Any() ? rs.FirstOrDefault() : null;
         }
@@ -168,7 +168,7 @@ internal class UserRepositories(string connectionSql)
         try
         {
             SqlConnection connect = _dapperDa.GetOpenConnection();
-            IEnumerable<UserAdmins>? rs = await connect.QueryAsync<UserAdmins>("SELECT [FullName],[UrlPicture],[Roles],[UserName],[Email],[CreatedDate] FROM [UserAdmins] Where UserId = @userid", new { userid });
+            IEnumerable<UserAdmins>? rs = await connect.QueryAsync<UserAdmins>("SELECT [FullName],[UrlPicture],[Roles],[UserName],[Email],[CreatedDate] FROM [UserAdmins] Where IsDeleted = 0 and UserId = @userid", new { userid });
             connect.Close();
             return rs != null && rs.Any() ? rs.FirstOrDefault() : null;
         }

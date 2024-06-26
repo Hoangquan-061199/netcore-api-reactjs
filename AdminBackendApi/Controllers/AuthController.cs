@@ -1,6 +1,8 @@
 ﻿using AdminBackendApi.DataMapping;
+using AdminBackendApi.Models;
 using AdminBackendApi.Repositories;
 using AdminBackendApi.Requests.Auths;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -19,23 +21,30 @@ public class AuthController : BaseController
     [HttpPost("Login")]
     public async Task<ActionResult> Login(RequestLogin req)
     {
-        ResponseLogin res = new()
+        ResponseModel res = new()
         {
             Message = "Đăng nhập thất bại :)"
         };
 
         try
         {
-            if (string.IsNullOrEmpty(req.Username) || string.IsNullOrEmpty(req.Password))
+            if (string.IsNullOrEmpty(req.Username) || string.IsNullOrEmpty(req.Password) || string.IsNullOrEmpty(req.Captcha) || string.IsNullOrEmpty(req.Code))
             {
-                res.Message = "Vui lòng nhập các thông tin bắt buộc";
+                res.Message = "Vui lòng nhập các thông tin bắt buộc :)";
+                throw new Exception(res.Message);
+            }
+
+            int passcode = Convert.ToInt32(WebConfig.PassCode) + DateTime.Now.Hour + DateTime.Now.Day;
+            if(Convert.ToInt32(req.Code) != passcode)
+            {
+                 res.Message = "Mã bảo vệ không đúng :)";
                 throw new Exception(res.Message);
             }
 
             UserAdmins? user = await _userRepositories.GetLogin(req.Username);
             if (user == null)
             {
-                res.Message = "Tài khoản mật khẩu không chính xác:)";
+                res.Message = "Tài khoản không chính xác:)";
                 throw new Exception(res.Message);
             }
             if (!user.IsActive)
@@ -51,7 +60,7 @@ public class AuthController : BaseController
             string passwordSha256 = Utilities.GeneratePasswordHash(req.Password, user.PasswordSalt!);
             if (passwordSha256 != user.Password)
             {
-                res.Message = "Tài khoản mật khẩu không chính xác:)";
+                res.Message = "Mật khẩu không chính xác:)";
                 if (user.CountPassFail <= 6)
                 {
                     int count = user.CountPassFail + 1;
@@ -71,7 +80,10 @@ public class AuthController : BaseController
             if (rs3 == 0) return Ok(res);
             string token = CreateToken(user);
             CreateToken(user, "RefreshToken");
-            res.Token = token;
+            res.Data = new
+            {
+                Token = token
+            };
             res.Message = "Đăng nhập thành công :3";
             return Ok(res);
         }
@@ -89,7 +101,7 @@ public class AuthController : BaseController
     public ActionResult Logout()
     {
         Response.Cookies.Delete("RefreshToken");
-        MessagesModel msg = new()
+        ResponseModel msg = new()
         {
             Message = "Đăng xuất thành công :3"
         };
@@ -102,7 +114,7 @@ public class AuthController : BaseController
     [HttpPost("RefreshToken")]
     public ActionResult RefreshToken()
     {
-        MessagesModel msg = new()
+        ResponseModel msg = new()
         {
             Message = "Invalid refresh token :)"
         };
@@ -126,11 +138,12 @@ public class AuthController : BaseController
             CheckTokenModel checkToken = CheckToken(refreshToken, validationParameters);
             string tokenNew = CreateToken(checkToken.User!);
             CreateToken(checkToken.User!, "RefreshToken");
-            ResponseRefreshToken rs = new()
+            msg.Message = "Refresh token thành công :3";
+            msg.Data = new
             {
                 Token = tokenNew
             };
-            return Ok(rs);
+            return Ok(msg);
         }
         catch (Exception e)
         {
@@ -140,9 +153,10 @@ public class AuthController : BaseController
     }
 
     [HttpPost("ChangePassword")]
+    [Authorize]
     public async Task<ActionResult> ChangePassword(RequestChangePassword req)
     {
-        MessagesModel msg = new()
+        ResponseModel msg = new()
         {
             Message = "Đổi mật khẩu thất bại :)"
         };
@@ -197,9 +211,10 @@ public class AuthController : BaseController
     /// Xoá tài khoản
     ///  </summary>   
     [HttpDelete("DeleteAccount")]
+    [Authorize]
     public async Task<ActionResult> DeleteAccount()
     {
-        MessagesModel msg = new()
+        ResponseModel msg = new()
         {
             Message = "Xoá tài khoản thất bại :)"
         };

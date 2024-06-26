@@ -10,10 +10,11 @@ namespace AdminBackendApi.Controllers;
 public class UserController : BaseController
 {
     private readonly UserRepositories _userRepositories = new(WebConfig.ConnectionString!);
+    private readonly DepartmentRepositories _departmentRepositories = new(WebConfig.ConnectionString!);
 
-    readonly MessagesModel msg = new()
+    readonly ResponseModel msg = new()
     {
-        Message = "Tải thất bại :)"
+        Message = "Tải dữ liệu thất bại :)"
     };
     /// <summary>
     /// Lấy ra danh sách user
@@ -23,7 +24,7 @@ public class UserController : BaseController
     {
         try
         {
-            List<UserAdminItem>? ListSearchs = await _userRepositories.GetListUserBySearch(search);
+            List<UserAdminItems>? ListSearchs = await _userRepositories.GetListUserBySearch(search);
             return Ok(ListSearchs);
         }
         catch (Exception e)
@@ -45,14 +46,14 @@ public class UserController : BaseController
             string? userId = GetUserAdminByToken(token);
             if (string.IsNullOrEmpty(userId)) throw new Exception(msg.Message);
             UserAdmins? user = await _userRepositories.GetUserHeaderByUserId(userId) ?? throw new Exception(msg.Message);
-            ResponseUserHeader obj = new()
+            msg.Data = new
             {
-                FullName = user.FullName,
-                UrlPicture = user.UrlPicture,
-                Roles = user.Roles,
+                user.FullName,
+                user.UrlPicture,
+                user.Roles,
                 UserId = userId
             };
-            return Ok(obj);
+            return Ok(msg.Data);
         }
         catch (Exception e)
         {
@@ -74,18 +75,19 @@ public class UserController : BaseController
             string? userId = GetUserAdminByToken(token);
             if (string.IsNullOrEmpty(userId)) throw new Exception(msg.Message);
             UserAdmins? user = await _userRepositories.GetUserUpdateByUserId(userId) ?? throw new Exception(msg.Message);
-            ResponseUpdateAccAdmin obj = new()
+            DepartmentItems? department = await _departmentRepositories.GetById(user.DepartmentId);
+            msg.Data = new
             {
-                FullName = user.FullName,
-                UrlPicture = user.UrlPicture,
-                Roles = user.Roles,
+                user.FullName,
+                user.UrlPicture,
+                user.Roles,
                 UserId = userId,
-                DepartmentName = null,
-                Email = user.Email,
-                CreatedDate = user.CreatedDate.ToString("dd/MM/yyyy HH:mm:ss"),
-                UserName = user.UserName
+                DepartmentName = department != null ? department.Name : "",
+                user.Email,
+                CreatedDate = user.CreatedDate.ToString("dd/MM/yyyy HH:mm:ss") ?? "",
+                user.UserName
             };
-            return Ok(obj);
+            return Ok(msg.Data);
         }
         catch (Exception e)
         {
@@ -206,31 +208,35 @@ public class UserController : BaseController
             obj.FullName = Utilities.RemoveHTMLTag(obj.FullName!);
             obj.Email = Utilities.RemoveHTMLTag(obj.Email!);
             string? url = string.Empty;
-            if (obj.File != null)
+            if (obj.File != null && obj.File.Length > 0)
             {
-                UploadFileModel file = HandleFiles.UploadFile(obj.File!, "image");
+                UploadFileModel file = HandleFiles.UploadFile(obj.File!, "image", "avatars/");
                 if (file != null)
                 {
                     url = file.UrlPicture;
                 }
+                // using MemoryStream ms = new();
+                // obj.File.CopyTo(ms);
+                // byte[]? fileBytes = ms.ToArray();
+                // url = Convert.ToBase64String(fileBytes) ?? string.Empty;
             }
             else
             {
                 url = user.UrlPicture;
             }
-            ResponseAccountUpdateLogin userRes = new()
+            object userRes = new
             {
-                FullName = obj.FullName,
-                Email = obj.Email,
+                obj.FullName,
+                obj.Email,
                 UrlPicture = url,
                 UserId = userId
             };
             int rs = await _userRepositories.UpdateForValue(userRes, "UserAdmins");
             if (rs == 0) throw new Exception(msg.Message);
             msg.Message = "Cập nhật tài khoản thành công :3";
-            msg.Obj = new
+            msg.Data = new
             {
-                userId,
+                UserId = userId,
                 obj.FullName,
                 obj.Email,
                 UrlPicture = url

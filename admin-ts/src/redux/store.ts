@@ -7,6 +7,7 @@ import authReducer from './auth/Auth.slice';
 import { authApi } from './auth/Auth.service';
 import userAdminReduce from './users/user.slice';
 import { userAdminApi } from './users/user.service';
+import { logAdminApi } from './logsadmin/LogsAdmin.service';
 
 const persistConfig = {
     key: 'root',
@@ -19,10 +20,8 @@ const rootReducer = combineReducers({
     auth: authReducer,
     [authApi.reducerPath]: authApi.reducer,
     userAdmin: userAdminReduce,
-    [userAdminApi.reducerPath]: userAdminApi.reducer
-    // user: userReducer,
-    // [userApi.reducerPath]: userApi.reducer,
-    // moduleName: moduleNameReducer
+    [userAdminApi.reducerPath]: userAdminApi.reducer,
+    [logAdminApi.reducerPath]: logAdminApi.reducer
 });
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 export const store = configureStore({
@@ -34,7 +33,8 @@ export const store = configureStore({
             },
         })
             .concat(authApi.middleware)
-            .concat(userAdminApi.middleware),
+            .concat(userAdminApi.middleware)
+            .concat(logAdminApi.middleware),
     devTools: true,
 });
 

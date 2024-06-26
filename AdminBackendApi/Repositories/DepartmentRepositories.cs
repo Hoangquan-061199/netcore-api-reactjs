@@ -49,7 +49,7 @@ internal class DepartmentRepositories(string connectionSql)
         try
         {
             SqlConnection connect = _dapperDa.GetOpenConnection();
-            IEnumerable<DepartmentItems> result = await connect.QueryAsync<DepartmentItems>("DepartmentListSearch", new { id });
+            IEnumerable<DepartmentItems> result = await connect.QueryAsync<DepartmentItems>("SELECT [ID],[Name],[OrderDisplay] FROM [Departments] WHERE IsDeleted = 0 and IsShow = 1 and ID = @id", new { id });
             connect.Close();
             return result?.FirstOrDefault();
         }

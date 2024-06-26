@@ -1,4 +1,5 @@
-﻿using AdminBackendApi.Repositories;
+﻿using AdminBackendApi.Models;
+using AdminBackendApi.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,7 +9,7 @@ namespace AdminBackendApi.Controllers;
 public class LogAdminController : BaseController
 {
     private readonly LogAdminRepositories _logAdminRepositories = new(WebConfig.ConnectionString!);
-    readonly MessagesModel msg = new()
+    readonly ResponseModel msg = new()
     {
         Message = "Tải thất bại :)"
     };
@@ -18,10 +19,11 @@ public class LogAdminController : BaseController
     [HttpGet]
     public async Task<ActionResult> GetLog()
     {
-
         try
         {
-            List<LogAdmins>? list = await _logAdminRepositories.GetAll();
+            SearchModel search = new();
+            await TryUpdateModelAsync(search);
+            List<LogAdmins>? list = await _logAdminRepositories.GetListSearch(search);
             return Ok(list);
         }
         catch (Exception e)

@@ -1,4 +1,6 @@
-﻿using System.Data.SqlClient;
+﻿using System.Data;
+using System.Data.SqlClient;
+using AdminBackendApi.Models;
 using Dapper;
 
 namespace AdminBackendApi.Repositories;
@@ -20,7 +22,7 @@ internal class LogAdminRepositories(string connectionSql)
         try
         {
             SqlConnection connect = _dapperDa.GetOpenConnection();
-            IEnumerable<int>? rs = await connect.QueryAsync<int>("DELETE FROM LogAdmins Where ID = @id", new { id });
+            IEnumerable<int>? rs = await connect.QueryAsync<int>("Update LogAdmins SET IsDeleted = 1 Where ID = @id", new { id });
             connect.Close();
             return 1;
         }
@@ -32,16 +34,27 @@ internal class LogAdminRepositories(string connectionSql)
     }
 
     /// <summary>
-    /// Lấy ra tất cả bản ghi Log
+    /// Lấy ra các bản ghi 
     /// </summary>
-    internal async Task<List<LogAdmins>?> GetAll()
+    internal async Task<List<LogAdmins>?> GetListSearch(SearchModel search)
     {
         try
         {
             SqlConnection connect = _dapperDa.GetOpenConnection();
-            IEnumerable<LogAdmins>? rs = await connect.QueryAsync<LogAdmins>("SELECT [ID],[Action],[Link],[CreatedDate],[Content],[UserName] FROM [LogAdmins]");
+            search.Page = search.Page > 1 ? search.Page : 1;
+            int size = search.PageSize > 0 ? search.PageSize : 20;
+            int start = (search.Page - 1) * search.PageSize;
+            var paras = new DynamicParameters();
+            paras.AddDynamicParams(new
+            {
+                @keyword = search.Keyword,
+                search.Sort,
+                start,
+                @size = search.PageSize
+            });
+            IEnumerable<LogAdmins> result = await connect.QueryAsync<LogAdmins>("LogAdminListSearch", paras, commandType: CommandType.StoredProcedure);
             connect.Close();
-            return rs != null && rs.Any() ? rs.ToList() : null;
+            return result?.ToList();
         }
         catch (Exception e)
         {

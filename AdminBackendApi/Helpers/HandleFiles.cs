@@ -103,7 +103,7 @@ internal class HandleFiles
         }
     }
 
-    internal static UploadFileModel UploadFile(IFormFile file, string type)
+    internal static UploadFileModel UploadFile(IFormFile file, string type, string pathroot = "uploads/")
     {
         UploadFileModel msg = new()
         {
@@ -113,8 +113,8 @@ internal class HandleFiles
         try
         {
             string currentDate = DateTime.Now.ToString("yyyy-MM-dd");
-            string newDirectory = Path.Combine(WebConfig.PathServer! + "uploads/", currentDate);
-            string path = "/uploads/" + currentDate + "/";
+            string newDirectory = Path.Combine(WebConfig.PathServer! + pathroot, currentDate);
+            string path = "/" + pathroot + currentDate + "/";
             if (!Directory.Exists(newDirectory))
             {
                 Directory.CreateDirectory(newDirectory);
