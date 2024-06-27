@@ -1,9 +1,5 @@
 const TemplateEmail = () => {
-  return (
-    <div>
-      TemplateEmail
-    </div>
-  )
+  return <div>TemplateEmail</div>
 }
 
 export default TemplateEmail

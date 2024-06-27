@@ -1,9 +1,5 @@
 const ListSystems = () => {
-  return (
-    <div>
-      List systems
-    </div>
-  )
+  return <div>List systems</div>
 }
 
 export default ListSystems

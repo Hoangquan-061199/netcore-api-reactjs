@@ -1,9 +1,5 @@
 const BlockIp = () => {
-  return (
-    <div>
-      BlockIp
-    </div>
-  )
+  return <div>BlockIp</div>
 }
 
 export default BlockIp

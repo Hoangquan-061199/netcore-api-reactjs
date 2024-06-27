@@ -1,9 +1,5 @@
 const Sitemap = () => {
-  return (
-    <div>
-      Sitemap
-    </div>
-  )
+  return <div>Sitemap</div>
 }
 
 export default Sitemap

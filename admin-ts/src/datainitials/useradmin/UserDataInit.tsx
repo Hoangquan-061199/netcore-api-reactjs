@@ -1,19 +1,19 @@
-import { UserHeader, UserUpdateGet } from "../../types/User.type";
+import { UserHeader, UserUpdateGet } from '../../types/User.type'
 
 export const userHeaderInitial: UserHeader = {
-    fullName: '',
-    urlPicture: '',
-    roles: '',
-    userId: '',
+  fullName: '',
+  urlPicture: '',
+  roles: '',
+  userId: ''
 }
 
 export const userUpdateGetInitial: UserUpdateGet = {
-    fullName: '',
-    urlPicture: '',
-    roles: '',
-    userId: '',
-    departmentName: '',
-    email: '',
-    createdDate: '',
-    userName: '',
+  fullName: '',
+  urlPicture: '',
+  roles: '',
+  userId: '',
+  departmentName: '',
+  email: '',
+  createdDate: '',
+  userName: ''
 }

@@ -241,7 +241,7 @@ public class UserController : BaseController
                 obj.Email,
                 UrlPicture = url
             };
-            AddLogAdmin("/account", "Cập nhật tài khoản " + userId, "Update-User");
+            AddLogAdmin("/account", "Cập nhật tài khoản " + user.UserName, "Update-User");
             return Ok(msg);
         }
         catch (Exception e)
@@ -267,6 +267,7 @@ public class UserController : BaseController
             int rs = await _userRepositories.Update(user);
             if (rs == 0) throw new Exception(msg.Message);
             msg.Message = "Xoá tài khoản thành công :3";
+            AddLogAdmin("/account", "Xóa tài khoản " + user.UserName, "Deleted-User");
             return Ok(msg);
         }
         catch (Exception e)

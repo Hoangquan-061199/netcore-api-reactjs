@@ -1,9 +1,5 @@
 const Resources = () => {
-  return (
-    <>
-     Resource 
-    </>
-  )
+  return <>Resource</>
 }
 
 export default Resources

@@ -1,10 +1,5 @@
-
 const OtherContent = () => {
-  return (
-    <div>
-      OtherContent
-    </div>
-  )
+  return <div>OtherContent</div>
 }
 
 export default OtherContent

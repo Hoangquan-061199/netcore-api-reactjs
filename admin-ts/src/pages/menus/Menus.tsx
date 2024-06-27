@@ -1,9 +1,5 @@
 const Menus = () => {
-  return (
-    <div>
-      Menus
-    </div>
-  )
+  return <div>Menus</div>
 }
 
 export default Menus

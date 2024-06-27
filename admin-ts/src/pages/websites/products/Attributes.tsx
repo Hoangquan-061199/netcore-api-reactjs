@@ -1,9 +1,5 @@
 const Attributes = () => {
-  return (
-    <div>
-      Attributes
-    </div>
-  )
+  return <div>Attributes</div>
 }
 
 export default Attributes
